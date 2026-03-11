@@ -1,0 +1,360 @@
+<template>
+  <div class="software-add">
+    <el-card>
+      <template #header>
+        <div class="card-header">
+          <div class="header-left">
+            <el-button link @click="goBack">
+              <el-icon><ArrowLeft /></el-icon>返回
+            </el-button>
+            <span class="title">新增软件</span>
+          </div>
+        </div>
+      </template>
+      
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-width="100px"
+        class="software-form"
+        style="max-width: 600px;"
+      >
+        <el-form-item label="软件标识" prop="slug">
+          <el-input
+            v-model="form.slug"
+            disabled
+            placeholder="自动生成"
+          />
+        </el-form-item>
+        
+        <el-form-item label="软件名称" prop="name">
+          <el-input
+            v-model="form.name"
+            placeholder="请输入软件名称"
+            maxlength="50"
+            show-word-limit
+          />
+        </el-form-item>
+        
+        <el-form-item label="平台" prop="platform">
+          <el-select v-model="form.platform" placeholder="请选择平台" style="width: 100%">
+            <el-option label="Windows" value="windows" />
+            <el-option label="macOS" value="macos" />
+            <el-option label="Linux" value="linux" />
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="通讯密钥" prop="api_key" style="width: 100%;">
+          <div class="api-key-input-group" style="display: flex; width: 100%;">
+            <el-input
+              v-model="form.api_key"
+              :type="showAPIKey ? 'text' : 'password'"
+              placeholder="点击生成按钮或手动输入密钥"
+              style="flex: 1;"
+            />
+            <el-button type="primary" circle @click="generateAPIKey" :disabled="!!form.api_key" title="生成密钥">
+              <el-icon><Key /></el-icon>
+            </el-button>
+            <el-button v-if="form.api_key" circle @click="copyAPIKey" title="复制密钥">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+            <el-button v-if="form.api_key" circle @click="showAPIKey = !showAPIKey" :title="showAPIKey ? '隐藏' : '显示'">
+              <el-icon><View v-if="!showAPIKey" /><Hide v-else /></el-icon>
+            </el-button>
+          </div>
+        </el-form-item>
+        
+        <el-form-item label="软件图标" prop="icon">
+          <el-upload
+            class="icon-uploader"
+            action="#"
+            :show-file-list="false"
+            :auto-upload="false"
+            :on-change="handleIconChange"
+          >
+            <img v-if="form.icon" :src="form.icon" class="icon-preview" />
+            <div v-else class="icon-upload-placeholder">
+              <el-icon><Plus /></el-icon>
+              <div class="upload-text">点击上传图标</div>
+            </div>
+          </el-upload>
+          <div class="upload-tip">建议尺寸 128x128，支持 JPG/PNG</div>
+        </el-form-item>
+        
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入软件描述"
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
+        
+        <el-form-item>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">
+            创建软件
+          </el-button>
+          <el-button @click="goBack">取消</el-button>
+        </el-form-item>
+      </el-form>
+
+
+    </el-card>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { CopyDocument, Key, View, Hide } from '@element-plus/icons-vue'
+import { createSoftware } from '@/api/software'
+
+const router = useRouter()
+const formRef = ref(null)
+const submitting = ref(false)
+const showAPIKeyDialog = ref(false)
+const showAPIKey = ref(false)
+const createdSoftware = reactive({
+  slug: '',
+  api_key: ''
+})
+
+const form = reactive({
+  name: '',
+  slug: '',
+  api_key: '',
+  description: '',
+  platform: 'windows',
+  icon: ''
+})
+
+// 自动生成 slug
+const generateSlug = () => {
+  form.slug = 'app_' + Date.now()
+}
+
+// 初始化时生成 slug
+generateSlug()
+
+const rules = {
+  name: [
+    { required: true, message: '请输入软件名称', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
+  platform: [
+    { required: true, message: '请选择平台', trigger: 'change' }
+  ]
+}
+
+// 返回列表
+const goBack = () => {
+  router.push('/software/list')
+}
+
+// 处理图标选择
+const handleIconChange = (file) => {
+  // TODO: 实际上传逻辑后续完善
+  // 这里先用本地预览
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    form.icon = e.target.result
+  }
+  reader.readAsDataURL(file.raw)
+}
+
+// 生成随机 API Key
+const generateAPIKey = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  form.api_key = result
+  showAPIKey.value = true
+  ElMessage.success('通讯密钥已生成')
+}
+
+// 复制 API Key
+const copyAPIKey = async () => {
+  if (!form.api_key) {
+    ElMessage.warning('请先生成通讯密钥')
+    return
+  }
+  
+  try {
+    // 优先使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(form.api_key)
+      ElMessage.success('通讯密钥已复制到剪贴板')
+    } else {
+      // 降级方案：使用 execCommand
+      const textArea = document.createElement('textarea')
+      textArea.value = form.api_key
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      textArea.style.top = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      
+      if (successful) {
+        ElMessage.success('通讯密钥已复制到剪贴板')
+      } else {
+        throw new Error('execCommand failed')
+      }
+    }
+  } catch (err) {
+    console.error('复制失败:', err)
+    ElMessage.error('复制失败，请手动复制')
+  }
+}
+
+// 复制到剪贴板
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success('已复制到剪贴板')
+  } catch (err) {
+    ElMessage.error('复制失败')
+  }
+}
+
+// 提交表单
+const handleSubmit = async () => {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return
+  
+  const submitData = {
+    name: form.name,
+    slug: form.slug,
+    api_key: form.api_key,
+    description: form.description,
+    platform: form.platform,
+    icon: form.icon
+  }
+  
+  submitting.value = true
+  try {
+    await createSoftware(submitData)
+    ElMessage.success('创建成功')
+    router.push('/software/list')
+  } catch (error) {
+    ElMessage.error('创建失败')
+  } finally {
+    submitting.value = false
+  }
+}
+</script>
+
+<style scoped>
+.software-add {
+  padding: 0;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.software-form {
+  padding: 20px 0;
+}
+
+.icon-uploader {
+  display: inline-block;
+}
+
+.icon-uploader :deep(.el-upload) {
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.icon-uploader :deep(.el-upload:hover) {
+  border-color: #409eff;
+}
+
+.icon-preview {
+  width: 100px;
+  height: 100px;
+  display: block;
+  object-fit: cover;
+}
+
+.icon-upload-placeholder {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8c939d;
+}
+
+.icon-upload-placeholder .el-icon {
+  font-size: 28px;
+}
+
+.upload-text {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 8px;
+}
+
+.api-key-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.api-key-input {
+  flex: 1;
+}
+
+.api-key-input :deep(.el-input__inner) {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.key-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.key-display code {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+</style>

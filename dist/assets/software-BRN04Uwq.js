@@ -1,0 +1,1 @@
+import{r as e}from"./request-BPXcOIpO.js";const o=t=>e({url:"/admin/software",method:"get",params:t}),s=t=>e({url:`/admin/software/${t}`,method:"get"}),n=t=>e({url:"/admin/software",method:"post",data:t}),d=(t,r)=>e({url:`/admin/software/${t}`,method:"put",data:r}),u=t=>e({url:`/admin/software/${t}`,method:"delete"});export{s as a,n as c,u as d,o as g,d as u};

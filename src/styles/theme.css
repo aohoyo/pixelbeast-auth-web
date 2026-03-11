@@ -1,0 +1,29 @@
+/* 像素兽·云验证 - 主题色配置 */
+:root {
+  /* 主色调 - 绿色 */
+  --el-color-primary: #2563eb;
+  --el-color-primary-light-3: #3af28a;
+  --el-color-primary-light-5: #6cf7a6;
+  --el-color-primary-light-7: #9dfbc2;
+  --el-color-primary-light-8: #b6fdd1;
+  --el-color-primary-light-9: #d6fee5;
+  --el-color-primary-dark-2: #1d4ed8;
+  
+  /* 成功色 */
+  --el-color-success: #2563eb;
+  --el-color-success-light-3: #3af28a;
+  --el-color-success-light-5: #6cf7a6;
+  --el-color-success-light-7: #9dfbc2;
+  --el-color-success-light-8: #b6fdd1;
+  --el-color-success-light-9: #d6fee5;
+  --el-color-success-dark-2: #1d4ed8;
+}
+
+/* 自定义组件主题色 */
+.custom-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+}
+
+.custom-primary-text {
+  color: #2563eb !important;
+}
