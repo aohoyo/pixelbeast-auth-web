@@ -1,19 +1,23 @@
 /**
- * 静态配置文件
+ * 配置汇总导出
  */
+import app from './app.config'
+import net from './net.config'
+import permission from './permission'
 
-// ==================== 系统信息 ====================
-export const SITE_NAME = '像素兽·云验证'  // 网站名称
-export const SITE_VERSION = '1.0.0'      // 版本号
-export const SITE_LOGO = '/xiangsushou.png' // Logo 图片路径
+// 分页配置
+export const PAGINATION = {
+  pageSize: 10,
+  pageSizes: [10, 20, 50, 100],
+  layout: 'total, sizes, prev, pager, next, jumper'
+}
 
-// ==================== API配置 ====================
-export const API_BASE_URL = '/api/v1'    // API 基础地址 (注意：当前值疑似占位符)
-export const REQUEST_TIMEOUT = 30000     // 请求超时时间 (毫秒)
+// 默认导出：合并所有配置
+export default {
+  ...app,
+  ...net,
+  ...permission,
+}
 
-// ==================== 备案版权 ====================
-export const ICP = '皖ICP备2024036063号-5'            // ICP 备案号
-export const ICP_LINK = 'https://beian.miit.gov.cn/'  // ICP 查询链接
-export const COPYRIGHT = '© 2026 像素兽科技 版权所有'  // 版权信息
-export const COMPANY = '像素兽科技有限公司' // 公司名称
-export const CONTACT_EMAIL = 'support@pixelbeast.com' // 联系邮箱
+// 模块导出
+export { app, net, permission }

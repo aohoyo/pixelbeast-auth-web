@@ -1,6 +1,10 @@
 <template>
   <header class="app-header">
     <div class="header-left">
+      <el-icon class="collapse-btn" @click="configStore.toggleSidebar()">
+        <Fold v-if="!configStore.sidebarCollapsed" />
+        <Expand v-else />
+      </el-icon>
       <breadcrumb />
     </div>
     
@@ -59,9 +63,11 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Breadcrumb from './Breadcrumb.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useConfigStore } from '@/stores/config'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const configStore = useConfigStore()
 const showSearch = ref(false)
 const searchQuery = ref('')
 
@@ -122,6 +128,18 @@ const handleCommand = (command) => {
 .header-left {
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+.collapse-btn {
+  font-size: 18px;
+  color: #606266;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.collapse-btn:hover {
+  color: var(--el-color-primary);
 }
 
 .header-right {

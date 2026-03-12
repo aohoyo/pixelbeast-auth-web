@@ -130,40 +130,13 @@ const fetchSoftwareList = async () => {
       page_size: pageSize.value,
       keyword: searchQuery.value
     })
-    softwareList.value = res?.list || []
-    total.value = res?.total || 0
+    // 后端返回格式: { code, msg, data: { list, total, page } }
+    softwareList.value = res?.data?.list || []
+    total.value = res?.data?.total || 0
   } catch (error) {
-    // 模拟数据
-    softwareList.value = [
-      {
-        id: 1,
-        name: '客户端A',
-        identifier: 'client-a',
-        latest_version: 'v2.1.0',
-        description: '主要客户端应用程序',
-        status: 1,
-        created_at: '2024-01-10T10:00:00'
-      },
-      {
-        id: 2,
-        name: '客户端B',
-        identifier: 'client-b',
-        latest_version: 'v1.5.2',
-        description: '备用客户端应用程序',
-        status: 1,
-        created_at: '2024-01-11T14:30:00'
-      },
-      {
-        id: 3,
-        name: '工具箱',
-        identifier: 'toolkit',
-        latest_version: null,
-        description: '开发工具集合',
-        status: 0,
-        created_at: '2024-01-12T09:15:00'
-      }
-    ]
-    total.value = softwareList.value.length
+    console.error('获取软件列表失败:', error)
+    softwareList.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }

@@ -1,3 +1,8 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
 # Logs
 logs
 *.log
@@ -7,16 +12,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
-node_modules
-.pnp
-.pnp.js
-
-# Build output
+# Build output (Vite)
 dist-ssr
 *.local
 
-# Editor directories and files
+# IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -29,16 +29,6 @@ dist-ssr
 # OS
 .DS_Store
 Thumbs.db
-
-# Config files with sensitive data
-src/config/app.config.js
-src/config/net.config.js
-src/config/permission.js
-
-# Environment files
-.env
-.env.local
-.env.*.local
 
 # Cache
 .cache

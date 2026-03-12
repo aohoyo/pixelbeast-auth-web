@@ -21,6 +21,12 @@
             <span>实时数据统计分析</span>
           </div>
         </div>
+        <div class="copyright" v-if="showCopyright">
+          <p>{{ copyright }}</p>
+          <p class="beian" v-if="icp">
+            <a :href="icpLink" target="_blank" rel="noopener">{{ icp }}</a>
+          </p>
+        </div>
       </div>
       
       <div class="login-right">
@@ -90,7 +96,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { login } from '@/api/auth'
-import { SITE_NAME } from '@/config'
+import config from '@/config'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -98,7 +104,11 @@ const formRef = ref(null)
 
 const loading = ref(false)
 const rememberMe = ref(false)
-const siteName = SITE_NAME
+const siteName = config.title
+const copyright = config.copyright
+const showCopyright = config.showCopyright
+const icp = config.icp
+const icpLink = config.icpLink
 
 const form = reactive({
   username: '',
@@ -221,6 +231,30 @@ const handleLogin = async () => {
 
 .feature-item .el-icon {
   font-size: 20px;
+}
+
+.copyright {
+  margin-top: auto;
+  padding-top: 48px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.copyright p {
+  margin: 0;
+}
+
+.beian {
+  margin-top: 8px;
+}
+
+.beian a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+}
+
+.beian a:hover {
+  color: #ffffff;
 }
 
 .login-right {

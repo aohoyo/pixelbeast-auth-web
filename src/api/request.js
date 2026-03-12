@@ -1,11 +1,11 @@
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
-import { API_BASE_URL } from '@/config'
+import config from '@/config'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
+  baseURL: config.baseURL,
+  timeout: config.timeout,
   headers: {
     'Content-Type': 'application/json'
   }

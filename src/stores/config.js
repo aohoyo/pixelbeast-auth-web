@@ -1,30 +1,37 @@
 /**
  * 动态状态配置
  * 
- * 说明：
- * - 这里的配置是响应式状态，运行时可能改变
- * - 如主题设置、用户偏好等
- * - 纯静态配置请使用 config/index.js
+ * 运行时可能改变的配置，如用户偏好等
  */
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { PAGINATION } from '@/config'
 
 export const useConfigStore = defineStore('config', () => {
-  // 分页配置（组件内直接使用，这里保留供全局使用）
-  const pagination = ref({
-    pageSize: 10,
-    pageSizes: [10, 20, 50, 100],
-    layout: 'total, sizes, prev, pager, next, jumper'
-  })
+  // 分页配置
+  const pagination = ref({ ...PAGINATION })
 
-  // 更新分页
+  // 侧边栏折叠状态
+  const sidebarCollapsed = ref(false)
+
   const updatePagination = (newConfig) => {
     Object.assign(pagination.value, newConfig)
   }
 
+  const resetPagination = () => {
+    pagination.value = { ...PAGINATION }
+  }
+
+  const toggleSidebar = () => {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
   return {
     pagination,
-    updatePagination
+    sidebarCollapsed,
+    updatePagination,
+    resetPagination,
+    toggleSidebar,
   }
 })
