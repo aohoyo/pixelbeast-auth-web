@@ -195,10 +195,7 @@
       <StorageUpload
         ref="storageUploadRef"
         :path-prefix="currentPath"
-        :max-size="100"
-        :max-files="100"
         @success="handleUploadSuccess"
-        @error="handleUploadError"
       />
     </el-dialog>
     
