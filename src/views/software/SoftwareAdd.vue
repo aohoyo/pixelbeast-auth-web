@@ -96,12 +96,6 @@
                 clearable
                 class="icon-url-input"
               />
-              <div class="icon-buttons">
-                <el-button type="warning" size="small" @click="form.icon = ''" v-if="form.icon">
-                  <el-icon><Delete /></el-icon>
-                  清除
-                </el-button>
-              </div>
               <div class="icon-tip">建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB</div>
             </div>
           </div>
