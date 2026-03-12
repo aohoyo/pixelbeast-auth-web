@@ -65,20 +65,38 @@
         </el-form-item>
         
         <el-form-item label="软件图标" prop="icon">
-          <el-upload
-            class="icon-uploader"
-            action="#"
-            :show-file-list="false"
-            :auto-upload="false"
-            :on-change="handleIconChange"
-          >
-            <img v-if="form.icon" :src="form.icon" class="icon-preview" />
-            <div v-else class="icon-upload-placeholder">
-              <el-icon><Plus /></el-icon>
-              <div class="upload-text">点击上传图标</div>
+          <div class="icon-input-mode">
+            <el-radio-group v-model="iconMode" size="small">
+              <el-radio-button label="upload">本地上传</el-radio-button>
+              <el-radio-button label="url">输入链接</el-radio-button>
+            </el-radio-group>
+          </div>
+          
+          <!-- 上传模式 -->
+          <div v-if="iconMode === 'upload'" class="icon-upload-area">
+            <FileUpload
+              v-model="form.icon"
+              type="image"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              :max-size="2"
+              :path-prefix="'software/icons'"
+              placeholder="点击上传图标"
+              tip="建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB"
+              @success="handleIconSuccess"
+            />
+          </div>
+          
+          <!-- 输入链接模式 -->
+          <div v-else class="icon-url-area">
+            <el-input
+              v-model="form.icon"
+              placeholder="请输入图标URL地址"
+              clearable
+            />
+            <div v-if="form.icon" class="icon-preview-wrapper">
+              <img :src="form.icon" class="icon-preview-img" alt="图标预览" />
             </div>
-          </el-upload>
-          <div class="upload-tip">建议尺寸 128x128，支持 JPG/PNG</div>
+          </div>
         </el-form-item>
         
         <el-form-item label="描述" prop="description">
@@ -109,6 +127,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { getSoftwareDetail, updateSoftware, resetAPIKey } from '@/api/software'
+import FileUpload from '@/components/Upload/FileUpload.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -125,6 +144,9 @@ const form = reactive({
   platform: 'windows',
   icon: ''
 })
+
+// 图标输入模式：upload(上传) / url(输入链接)
+const iconMode = ref('upload')
 
 const rules = {
   name: [
@@ -166,15 +188,10 @@ const goBack = () => {
   router.push('/software/list')
 }
 
-// 处理图标选择
-const handleIconChange = (file) => {
-  // TODO: 实际上传逻辑后续完善
-  // 这里先用本地预览
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    form.icon = e.target.result
-  }
-  reader.readAsDataURL(file.raw)
+// 图标上传成功
+const handleIconSuccess = ({ url }) => {
+  form.icon = url
+  ElMessage.success('图标上传成功')
 }
 
 // 复制到剪贴板
@@ -395,5 +412,37 @@ onMounted(() => {
   font-size: 12px;
   color: #909399;
   margin-top: 8px;
+}
+
+/* 图标输入模式 */
+.icon-input-mode {
+  margin-bottom: 12px;
+}
+
+.icon-upload-area {
+  display: inline-block;
+}
+
+.icon-url-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.icon-preview-wrapper {
+  width: 100px;
+  height: 100px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.icon-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
