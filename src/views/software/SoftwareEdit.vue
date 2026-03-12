@@ -340,6 +340,8 @@ const handleSubmit = async () => {
     icon: form.icon
   }
   
+  console.log('提交数据:', submitData)
+  
   submitting.value = true
   try {
     await updateSoftware(id, submitData)
