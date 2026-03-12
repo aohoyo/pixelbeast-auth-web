@@ -64,12 +64,15 @@
           <span class="file-size">({{ formatFileSize(file.size) }})</span>
         </div>
         <div class="file-status">
-          <el-progress 
-            v-if="file.status === 'uploading'" 
-            :percentage="file.progress" 
-            :stroke-width="4"
-            class="upload-progress"
-          />
+          <div v-if="file.status === 'uploading'" class="progress-wrapper">
+            <el-progress 
+              :percentage="file.progress" 
+              :stroke-width="8"
+              :show-text="true"
+              class="upload-progress"
+            />
+            <span class="progress-text">{{ file.progress }}%</span>
+          </div>
           <el-icon v-else-if="file.status === 'success'" class="status-icon success"><CircleCheck /></el-icon>
           <el-icon v-else-if="file.status === 'error'" class="status-icon error"><CircleClose /></el-icon>
           <el-icon v-else class="status-icon pending"><Clock /></el-icon>
@@ -508,11 +511,25 @@ defineExpose({
 }
 
 .file-status {
-  width: 120px;
+  width: 150px;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .upload-progress {
+  flex: 1;
   margin: 0;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #409eff;
+  min-width: 35px;
+  text-align: right;
 }
 
 .status-icon {
