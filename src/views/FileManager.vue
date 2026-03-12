@@ -862,4 +862,34 @@ onUnmounted(() => {
   width: 100%;
   min-height: 200px;
 }
+
+/* 强制显示上传列表 */
+.upload-wrapper :deep(.el-upload-list) {
+  display: block !important;
+  margin-top: 16px;
+}
+
+.upload-wrapper :deep(.el-upload-list__item) {
+  display: flex !important;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background-color: #f5f7fa;
+}
+
+.upload-wrapper :deep(.el-upload-list__item-name) {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.upload-wrapper :deep(.el-upload-list__item-status-label) {
+  display: block !important;
+}
+
+.upload-wrapper :deep(.el-progress) {
+  display: block !important;
+  width: 100%;
+  margin-top: 4px;
+}
 </style>
