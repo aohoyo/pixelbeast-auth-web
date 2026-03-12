@@ -132,6 +132,24 @@
                 {{ row.updatedAt }}
               </template>
             </el-table-column>
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <el-button-group>
+                  <el-button size="small" @click="previewFile(row)" v-if="row.fileType === 'image'">
+                    <el-icon><View /></el-icon>
+                  </el-button>
+                  <el-button size="small" @click="downloadFile(row)">
+                    <el-icon><Download /></el-icon>
+                  </el-button>
+                  <el-button size="small" @click="copyFileLink(row)">
+                    <el-icon><Link /></el-icon>
+                  </el-button>
+                  <el-button size="small" type="danger" @click="deleteFile(row)">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </el-button-group>
+              </template>
+            </el-table-column>
           </el-table>
         </div>
       </div>
@@ -327,6 +345,51 @@ const canPreview = computed(() => {
 
 // 当前文件夹ID（0表示根目录）
 const currentFolderId = ref(0)
+
+// 列表模式操作函数
+const previewFile = (file) => {
+  window.open(file.url, '_blank')
+}
+
+const downloadFile = async (file) => {
+  try {
+    const res = await getDownloadUrl(file.id)
+    if (res.code === 0 && res.data.url) {
+      const link = document.createElement('a')
+      link.href = res.data.url
+      link.download = file.name
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      ElMessage.success('开始下载')
+    }
+  } catch (error) {
+    ElMessage.error('下载失败')
+  }
+}
+
+const copyFileLink = async (file) => {
+  try {
+    await navigator.clipboard.writeText(file.url)
+    ElMessage.success('链接已复制')
+  } catch (err) {
+    ElMessage.error('复制失败')
+  }
+}
+
+const deleteFile = async (file) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除 "${file.name}" 吗？`, '确认删除', { type: 'warning' })
+    await deleteFile(file.id)
+    ElMessage.success('删除成功')
+    fetchFileList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
+}
 
 // 视图模式：grid(网格) / list(列表)
 const viewMode = ref('grid')
