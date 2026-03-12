@@ -73,7 +73,6 @@
               action="/api/v1/upload"
               :headers="uploadHeaders"
               :data="{ pathPrefix: 'software/icons' }"
-              :show-file-list="false"
               :auto-upload="true"
               accept="image/jpeg,image/png,image/gif,image/webp"
               :before-upload="handleIconBeforeUpload"
