@@ -4,7 +4,7 @@
     <el-row :gutter="20">
       <el-col :xs="24" :sm="12" :md="6">
         <div class="stat-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6 0%, var(--el-color-primary) 100%);">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
             <el-icon><Box /></el-icon>
           </div>
           <div class="stat-info">
@@ -198,7 +198,7 @@ const initTrendChart = () => {
           ])
         },
         itemStyle: {
-          color: 'var(--el-color-primary)'
+          color: '#2563eb'
         }
       }
     ]

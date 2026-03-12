@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="login-left">
         <div class="brand">
-          <el-icon class="brand-icon"><Monitor /></el-icon>
+          <img :src="siteLogo" class="brand-logo" alt="logo" />
           <h1 class="brand-name">{{ siteName }}</h1>
         </div>
         <p class="brand-desc">专业的软件版本管理与分发平台</p>
@@ -105,6 +105,7 @@ const formRef = ref(null)
 const loading = ref(false)
 const rememberMe = ref(false)
 const siteName = config.title
+const siteLogo = config.logo
 const copyright = config.copyright
 const showCopyright = config.showCopyright
 const icp = config.icp
@@ -131,25 +132,21 @@ const handleLogin = async () => {
   
   loading.value = true
   try {
-    // 调用登录 API
     const response = await login({
       username: form.username,
       password: form.password
     })
     
-    // 检查返回状态
     if (response.code !== 0) {
       ElMessage.error(response.msg || '登录失败')
       return
     }
     
-    // 保存 token 和用户信息
     const { token, expires_in } = response.data
     authStore.login(token, { expires_in })
     
     ElMessage.success('登录成功')
     
-    // 获取重定向地址，默认跳转到首页
     const redirect = router.currentRoute.value.query.redirect || '/dashboard'
     router.push(redirect)
   } catch (error) {
@@ -184,7 +181,7 @@ const handleLogin = async () => {
 
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   padding: 60px;
   display: flex;
   flex-direction: column;
@@ -199,18 +196,21 @@ const handleLogin = async () => {
   margin-bottom: 24px;
 }
 
-.brand-icon {
-  font-size: 48px;
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .brand-name {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   margin: 0;
 }
 
 .brand-desc {
-  font-size: 18px;
+  font-size: 16px;
   opacity: 0.9;
   margin-bottom: 48px;
 }
@@ -225,7 +225,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 16px;
+  font-size: 15px;
   opacity: 0.9;
 }
 
@@ -271,14 +271,14 @@ const handleLogin = async () => {
 }
 
 .form-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 8px 0;
 }
 
 .form-subtitle {
-  font-size: 16px;
+  font-size: 15px;
   color: #6b7280;
   margin: 0 0 32px 0;
 }
@@ -302,7 +302,7 @@ const handleLogin = async () => {
 .login-btn {
   width: 100%;
   border-radius: 8px;
-  height: 48px;
+  height: 46px;
   font-size: 16px;
   font-weight: 500;
 }

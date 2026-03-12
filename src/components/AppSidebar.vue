@@ -122,20 +122,21 @@ onMounted(() => {
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 16px;
   background-color: #191a1c;
   border-bottom: 1px solid #2d2e2f;
   gap: 12px;
 }
 
 .logo-img {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
@@ -155,8 +156,8 @@ onMounted(() => {
 }
 
 .sidebar-menu {
-  border-right: none;
-  background-color: transparent;
+  border-right: none !important;
+  background-color: transparent !important;
   width: 100% !important;
 }
 
