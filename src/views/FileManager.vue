@@ -439,16 +439,31 @@ const handleDownload = async () => {
 const handleCopyLink = async () => {
   if (!contextMenu.file) return
   try {
-    const res = await getDownloadUrl(contextMenu.file.id)
-    if (res.code === 0 && res.data.url) {
-      // 复制到剪贴板
-      await navigator.clipboard.writeText(res.data.url)
-      ElMessage.success('链接已复制到剪贴板')
+    // 直接使用文件URL（数据库中存储的公开URL）
+    const url = contextMenu.file.url
+    if (url) {
+      // 尝试使用现代剪贴板API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url)
+        ElMessage.success('链接已复制到剪贴板')
+      } else {
+        // 备用方案：使用textarea复制
+        const textarea = document.createElement('textarea')
+        textarea.value = url
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+        ElMessage.success('链接已复制到剪贴板')
+      }
     } else {
-      ElMessage.error('获取链接失败')
+      ElMessage.error('文件URL为空')
     }
   } catch (error) {
-    ElMessage.error('复制失败')
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动复制')
   }
   hideContextMenu()
 }
