@@ -71,7 +71,7 @@
             <el-upload
               class="icon-uploader-inline"
               action="/api/v1/upload"
-              :headers="{ Authorization: 'Bearer ' + localStorage.getItem('token') }"
+              :headers="uploadHeaders"
               :data="{ pathPrefix: 'software/icons' }"
               :show-file-list="false"
               :auto-upload="true"
@@ -138,7 +138,6 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, Key, View, Hide, Picture, Delete } from '@element-plus/icons-vue'
 import { createSoftware } from '@/api/software'
-import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -157,6 +156,13 @@ const form = reactive({
   description: '',
   platform: 'windows',
   icon: ''
+})
+
+// 上传请求头
+const uploadHeaders = computed(() => {
+  return {
+    Authorization: 'Bearer ' + localStorage.getItem('token')
+  }
 })
 
 // 图标上传前处理
