@@ -191,12 +191,32 @@
       v-model="uploadDialog.visible"
       title="上传文件"
       width="700px"
+      destroy-on-close
     >
-      <StorageUpload
-        ref="storageUploadRef"
-        :path-prefix="currentPath"
-        @success="handleUploadSuccess"
-      />
+      <div class="upload-wrapper">
+        <el-upload
+          action="/api/v1/upload"
+          :headers="{ Authorization: 'Bearer ' + localStorage.getItem('token') }"
+          :data="{ pathPrefix: 'files' }"
+          :multiple="true"
+          :limit="100"
+          :auto-upload="true"
+          :before-upload="handleBeforeUpload"
+          :on-success="handleUploadSuccess"
+          :on-error="handleUploadError"
+          drag
+        >
+          <el-icon class="el-icon--upload" :size="64"><UploadFilled /></el-icon>
+          <div class="el-upload__text">
+            将文件拖到此处，或<em>点击上传</em>
+          </div>
+          <template #tip>
+            <div class="el-upload__tip">
+              支持任意类型文件，单个文件最大 100MB
+            </div>
+          </template>
+        </el-upload>
+      </div>
     </el-dialog>
     
     <!-- 重命名对话框 -->
@@ -234,8 +254,8 @@ import {
   Link
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
-import StorageUpload from '@/components/StorageUpload.vue'
 import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl } from '@/api/file'
+import { createFile } from '@/api/file'
 
 // 文件列表
 const fileList = ref([])
@@ -388,17 +408,39 @@ const handleRefresh = () => {
   fetchFileList()
 }
 
+// 上传前检查
+const handleBeforeUpload = (file) => {
+  const maxSize = 100 * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error('文件大小不能超过 100MB')
+    return false
+  }
+  return true
+}
+
 // 上传成功
-const handleUploadSuccess = () => {
-  ElMessage.success('上传成功')
-  uploadDialog.visible = false
-  fetchFileList()
+const handleUploadSuccess = async (response, file) => {
+  if (response.code === 0) {
+    try {
+      await createFile({
+        name: file.name,
+        url: response.data.url,
+        size: file.size,
+        parent_id: 0
+      })
+      ElMessage.success(`${file.name} 上传成功`)
+      fetchFileList()
+    } catch (err) {
+      console.error('创建文件记录失败:', err)
+    }
+  } else {
+    ElMessage.error(response.message || '上传失败')
+  }
 }
 
 // 上传失败
-const handleUploadError = (error) => {
-  console.error('上传失败:', error)
-  ElMessage.error('上传失败')
+const handleUploadError = (error, file) => {
+  ElMessage.error(`${file.name} 上传失败`)
 }
 
 // 预览
@@ -810,5 +852,15 @@ onUnmounted(() => {
 .file-name-text {
   font-size: 14px;
   color: #303133;
+}
+
+/* 上传区域 */
+.upload-wrapper {
+  padding: 20px;
+}
+
+.upload-wrapper :deep(.el-upload-dragger) {
+  width: 100%;
+  min-height: 200px;
 }
 </style>
