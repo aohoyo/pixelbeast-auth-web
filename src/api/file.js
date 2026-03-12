@@ -11,7 +11,7 @@ export const getFileList = (params) => {
   return request({
     url: '/files',
     method: 'get',
-    params
+    params: { parent_id: params.parent_id || 0 }
   })
 }
 
@@ -19,7 +19,7 @@ export const getFileList = (params) => {
  * 创建文件夹
  * @param {Object} data - 文件夹信息
  * @param {string} data.name - 文件夹名称
- * @param {string} data.path - 父路径
+ * @param {number} data.parent_id - 父文件夹ID
  */
 export const createFolder = (data) => {
   return request({

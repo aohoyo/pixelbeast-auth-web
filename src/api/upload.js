@@ -9,7 +9,7 @@ import request from './request'
  */
 export const getUploadToken = (data) => {
   return request({
-    url: '/api/v1/upload/token',
+    url: '/upload/token',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export const getUploadToken = (data) => {
  */
 export const uploadFile = (formData) => {
   return request({
-    url: '/api/v1/upload',
+    url: '/upload',
     method: 'post',
     data: formData,
     headers: {
@@ -36,7 +36,7 @@ export const uploadFile = (formData) => {
  */
 export const deleteFile = (url) => {
   return request({
-    url: '/api/v1/upload/delete',
+    url: '/upload/delete',
     method: 'post',
     data: { url }
   })
