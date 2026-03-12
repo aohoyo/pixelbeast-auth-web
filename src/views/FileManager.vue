@@ -144,7 +144,7 @@
                   <el-button size="small" @click="copyFileLink(row)">
                     <el-icon><Link /></el-icon>
                   </el-button>
-                  <el-button size="small" type="danger" @click="deleteFile(row)">
+                  <el-button size="small" type="danger" @click="handleDeleteFile(row)">
                     <el-icon><Delete /></el-icon>
                   </el-button>
                 </el-button-group>
@@ -378,7 +378,7 @@ const copyFileLink = async (file) => {
   }
 }
 
-const deleteFile = async (file) => {
+const handleDeleteFile = async (file) => {
   try {
     await ElMessageBox.confirm(`确定要删除 "${file.name}" 吗？`, '确认删除', { type: 'warning' })
     await deleteFile(file.id)
