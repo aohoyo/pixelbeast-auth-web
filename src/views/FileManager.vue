@@ -195,6 +195,7 @@
     >
       <div class="upload-wrapper">
         <el-upload
+          ref="testUpload"
           action="/api/v1/upload"
           :headers="{ Authorization: 'Bearer ' + localStorage.getItem('token') }"
           :data="{ pathPrefix: 'files' }"
@@ -204,6 +205,7 @@
           :before-upload="handleBeforeUpload"
           :on-success="handleUploadSuccess"
           :on-error="handleUploadError"
+          :on-change="handleUploadChange"
         >
           <el-button type="primary">
             <el-icon><Upload /></el-icon>
@@ -215,6 +217,13 @@
             </div>
           </template>
         </el-upload>
+        <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+          <div>上传状态: {{ uploadStatus }}</div>
+          <div v-if="uploadFileList.length > 0">文件数量: {{ uploadFileList.length }}</div>
+          <div v-for="(f, i) in uploadFileList" :key="i" style="margin-top: 5px;">
+            {{ f.name }} - {{ f.status }} - {{ f.percentage }}%
+          </div>
+        </div>
       </div>
     </el-dialog>
     
@@ -286,6 +295,17 @@ const contextMenu = reactive({
 const uploadDialog = reactive({
   visible: false
 })
+
+// 测试上传状态
+const testUpload = ref(null)
+const uploadStatus = ref('等待上传')
+const uploadFileList = ref([])
+
+const handleUploadChange = (file, fileList) => {
+  uploadStatus.value = file.status
+  uploadFileList.value = fileList
+  console.log('Upload change:', file, fileList)
+}
 
 // 上传组件引用
 const storageUploadRef = ref(null)
