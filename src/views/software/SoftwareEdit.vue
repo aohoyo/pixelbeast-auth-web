@@ -91,11 +91,9 @@
             <div class="icon-actions-vertical">
               <el-input
                 v-model="form.icon"
-                placeholder="输入图标URL地址"
+                placeholder="输入图标URL地址（可选）"
                 clearable
-                class="icon-url-input"
               />
-              <div class="icon-tip">建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB</div>
             </div>
           </div>
         </el-form-item>
@@ -498,21 +496,7 @@ onMounted(() => {
   gap: 12px;
 }
 
-.icon-url-input {
+.icon-actions-vertical :deep(.el-input) {
   width: 100%;
-}
-
-.icon-url-input :deep(.el-input__inner) {
-  font-size: 13px;
-}
-
-.icon-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.icon-tip {
-  font-size: 12px;
-  color: #909399;
 }
 </style>
