@@ -133,28 +133,17 @@
     <el-dialog
       v-model="uploadDialog.visible"
       title="上传文件"
-      width="500px"
+      width="600px"
     >
-      <el-upload
-        drag
-        action="/api/v1/upload"
-        :headers="uploadHeaders"
-        :data="{ pathPrefix: currentPath }"
-        multiple
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-        :before-upload="handleBeforeUpload"
-      >
-        <el-icon class="el-icon--upload" :size="64"><UploadFilled /></el-icon>
-        <div class="el-upload__text">
-          将文件拖到此处，或<em>点击上传</em>
-        </div>
-        <template #tip>
-          <div class="el-upload__tip">
-            支持任意类型文件，单个文件最大 100MB
-          </div>
-        </template>
-      </el-upload>
+      <StorageUpload
+        ref="storageUploadRef"
+        :path-prefix="currentPath"
+        :multiple="true"
+        :limit="10"
+        :max-size="100"
+        @success="handleUploadSuccess"
+        @error="handleUploadError"
+      />
     </el-dialog>
     
     <!-- 重命名对话框 -->
@@ -189,6 +178,7 @@ import {
   DocumentAdd
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
+import StorageUpload from '@/components/StorageUpload.vue'
 import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl, batchDownload } from '@/api/file'
 
 // 文件列表
@@ -221,6 +211,9 @@ const contextMenu = reactive({
 const uploadDialog = reactive({
   visible: false
 })
+
+// 上传组件引用
+const storageUploadRef = ref(null)
 
 // 重命名对话框
 const renameDialog = reactive({
@@ -317,25 +310,14 @@ const handleRefresh = () => {
   fetchFileList()
 }
 
-// 上传前检查
-const handleBeforeUpload = (file) => {
-  const maxSize = 100 * 1024 * 1024 // 100MB
-  if (file.size > maxSize) {
-    ElMessage.error('文件大小不能超过 100MB')
-    return false
-  }
-  return true
-}
-
 // 上传成功
 const handleUploadSuccess = () => {
-  ElMessage.success('上传成功')
   fetchFileList()
 }
 
 // 上传失败
-const handleUploadError = () => {
-  ElMessage.error('上传失败')
+const handleUploadError = (error) => {
+  console.error('上传失败:', error)
 }
 
 // 预览
