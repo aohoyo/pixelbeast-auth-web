@@ -496,6 +496,10 @@ onMounted(() => {
   gap: 12px;
 }
 
+.icon-actions-vertical {
+  width: 100%;
+}
+
 .icon-actions-vertical :deep(.el-input) {
   width: 100%;
 }
