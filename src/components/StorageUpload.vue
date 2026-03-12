@@ -367,24 +367,42 @@ const uploadToTencent = async (fileItem, token) => {
   return token.url + '/' + token.key
 }
 
-// 上传到七牛云
+// 上传到七牛云（带进度）
 const uploadToQiniu = async (fileItem, token) => {
-  const formData = new FormData()
-  formData.append('key', token.key)
-  formData.append('token', token.token)
-  formData.append('file', fileItem.raw)
-  
-  const response = await fetch(token.url, {
-    method: 'POST',
-    body: formData
+  return new Promise((resolve, reject) => {
+    const formData = new FormData()
+    formData.append('key', token.key)
+    formData.append('token', token.token)
+    formData.append('file', fileItem.raw)
+    
+    const xhr = new XMLHttpRequest()
+    
+    // 上传进度
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100)
+        fileItem.progress = percentComplete
+      }
+    }
+    
+    // 上传完成
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const result = JSON.parse(xhr.responseText)
+        resolve(token.domain + '/' + result.key)
+      } else {
+        reject(new Error('上传失败'))
+      }
+    }
+    
+    // 上传错误
+    xhr.onerror = () => {
+      reject(new Error('上传失败'))
+    }
+    
+    xhr.open('POST', token.url)
+    xhr.send(formData)
   })
-  
-  if (!response.ok) {
-    throw new Error('上传失败')
-  }
-  
-  const result = await response.json()
-  return token.domain + '/' + result.key
 }
 
 // 上传到MinIO
