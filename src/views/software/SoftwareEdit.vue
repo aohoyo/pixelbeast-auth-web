@@ -126,6 +126,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument, Picture, Delete } from '@element-plus/icons-vue'
 import { getSoftwareDetail, updateSoftware, resetAPIKey } from '@/api/software'
+import { createFile } from '@/api/file'
 
 const router = useRouter()
 const route = useRoute()
@@ -167,9 +168,22 @@ const handleIconBeforeUpload = (file) => {
 }
 
 // 图标上传成功
-const handleIconSuccess = (response) => {
+const handleIconSuccess = async (response, file) => {
   if (response.code === 0) {
     form.icon = response.data.url
+    // 创建文件记录
+    try {
+      await createFile({
+        name: file.name,
+        url: response.data.url,
+        size: file.size,
+        parent_id: 0,
+        source: 'software',
+        source_id: form.id || 0
+      })
+    } catch (err) {
+      console.error('创建文件记录失败:', err)
+    }
     ElMessage.success('图标上传成功')
   } else {
     ElMessage.error(response.message || '上传失败')
