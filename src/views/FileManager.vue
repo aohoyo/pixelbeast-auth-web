@@ -191,6 +191,7 @@
       v-model="uploadDialog.visible"
       title="上传文件"
       width="700px"
+      :max-height="600"
       destroy-on-close
     >
       <div class="upload-wrapper">
@@ -876,6 +877,9 @@ onUnmounted(() => {
 /* 上传区域 */
 .upload-wrapper {
   padding: 20px;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .upload-wrapper :deep(.el-upload-dragger) {
