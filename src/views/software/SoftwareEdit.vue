@@ -20,6 +20,14 @@
         class="software-form"
         style="max-width: 600px;"
       >
+        <el-form-item label="软件标识" prop="slug">
+          <el-input
+            v-model="form.slug"
+            disabled
+            placeholder="自动生成"
+          />
+        </el-form-item>
+        
         <el-form-item label="软件名称" prop="name">
           <el-input
             v-model="form.name"
@@ -29,11 +37,12 @@
           />
         </el-form-item>
         
-        <el-form-item label="标识符">
-          <div class="key-display">
-            <span class="disabled-text">{{ form.slug }}</span>
-            <el-tag size="small" type="info">自动生成</el-tag>
-          </div>
+        <el-form-item label="平台" prop="platform">
+          <el-select v-model="form.platform" placeholder="请选择平台" style="width: 100%">
+            <el-option label="Windows" value="windows" />
+            <el-option label="macOS" value="macos" />
+            <el-option label="Linux" value="linux" />
+          </el-select>
         </el-form-item>
         
         <el-form-item label="通讯密钥" prop="api_key" style="width: 100%;">
@@ -41,27 +50,19 @@
             <el-input
               v-model="form.api_key"
               :type="showAPIKey ? 'text' : 'password'"
-              placeholder="请输入或生成通讯密钥"
+              placeholder="点击生成按钮或手动输入密钥"
               style="flex: 1;"
             />
-            <el-button circle @click="showAPIKey = !showAPIKey" :title="showAPIKey ? '隐藏' : '显示'">
-              <el-icon><View v-if="!showAPIKey" /><Hide v-else /></el-icon>
-            </el-button>
-            <el-button circle @click="copyToClipboard(form.api_key)" title="复制">
-              <el-icon><CopyDocument /></el-icon>
-            </el-button>
-            <el-button type="primary" circle @click="generateAPIKey" title="随机生成">
+            <el-button type="primary" circle @click="generateAPIKey" :disabled="!!form.api_key" title="生成密钥">
               <el-icon><Key /></el-icon>
             </el-button>
+            <el-button v-if="form.api_key" circle @click="copyAPIKey" title="复制密钥">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+            <el-button v-if="form.api_key" circle @click="showAPIKey = !showAPIKey" :title="showAPIKey ? '隐藏' : '显示'">
+              <el-icon><View v-if="!showAPIKey" /><Hide v-else /></el-icon>
+            </el-button>
           </div>
-        </el-form-item>
-        
-        <el-form-item label="平台" prop="platform">
-          <el-select v-model="form.platform" placeholder="请选择平台" style="width: 100%">
-            <el-option label="Windows" value="windows" />
-            <el-option label="macOS" value="macos" />
-            <el-option label="Linux" value="linux" />
-          </el-select>
         </el-form-item>
         
         <el-form-item label="软件图标" prop="icon">
@@ -124,7 +125,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CopyDocument, Picture, Delete } from '@element-plus/icons-vue'
+import { CopyDocument, Key, View, Hide, Picture, Delete } from '@element-plus/icons-vue'
 import { getSoftwareDetail, updateSoftware, resetAPIKey } from '@/api/software'
 import { createFile } from '@/api/file'
 
@@ -233,6 +234,11 @@ const fetchSoftwareDetail = async () => {
 // 返回列表
 const goBack = () => {
   router.push('/software/list')
+}
+
+// 复制API密钥
+const copyAPIKey = () => {
+  copyToClipboard(form.api_key)
 }
 
 // 复制到剪贴板
