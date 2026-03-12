@@ -36,6 +36,8 @@ export const createFolder = (data) => {
  * @param {string} data.url - 文件URL
  * @param {number} data.size - 文件大小
  * @param {number} data.parent_id - 父文件夹ID
+ * @param {string} data.source - 来源：software/version/file
+ * @param {number} data.source_id - 关联的业务ID
  */
 export const createFile = (data) => {
   return request({
