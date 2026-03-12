@@ -65,36 +65,44 @@
         </el-form-item>
         
         <el-form-item label="软件图标" prop="icon">
-          <div class="icon-input-mode">
-            <el-radio-group v-model="iconMode" size="small">
-              <el-radio-button label="upload">本地上传</el-radio-button>
-              <el-radio-button label="url">输入链接</el-radio-button>
-            </el-radio-group>
-          </div>
-          
-          <!-- 上传模式 -->
-          <div v-if="iconMode === 'upload'" class="icon-upload-area">
-            <FileUpload
-              v-model="form.icon"
-              type="image"
+          <div class="icon-wrapper">
+            <!-- 预览图 -->
+            <el-upload
+              class="icon-uploader-inline"
+              action="/api/v1/upload"
+              :headers="{ Authorization: 'Bearer ' + localStorage.getItem('token') }"
+              :data="{ pathPrefix: 'software/icons' }"
+              :show-file-list="false"
+              :auto-upload="true"
               accept="image/jpeg,image/png,image/gif,image/webp"
-              :max-size="2"
-              :path-prefix="'software/icons'"
-              placeholder="点击上传图标"
-              tip="建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB"
-              @success="handleIconSuccess"
-            />
-          </div>
-          
-          <!-- 输入链接模式 -->
-          <div v-else class="icon-url-area">
-            <el-input
-              v-model="form.icon"
-              placeholder="请输入图标URL地址"
-              clearable
-            />
-            <div v-if="form.icon" class="icon-preview-wrapper">
-              <img :src="form.icon" class="icon-preview-img" alt="图标预览" />
+              :before-upload="handleIconBeforeUpload"
+              :on-success="handleIconSuccess"
+              :on-error="handleIconError"
+            >
+              <div class="icon-preview-box">
+                <img v-if="form.icon" :src="form.icon" class="icon-img" alt="图标" />
+                <div v-else class="icon-placeholder">
+                  <el-icon :size="32"><Picture /></el-icon>
+                  <span>点击上传</span>
+                </div>
+              </div>
+            </el-upload>
+            
+            <!-- 右侧操作区 -->
+            <div class="icon-actions">
+              <el-input
+                v-model="form.icon"
+                placeholder="输入图标URL地址"
+                clearable
+                class="icon-url-input"
+              />
+              <div class="icon-buttons">
+                <el-button size="small" @click="form.icon = ''" v-if="form.icon">
+                  <el-icon><Delete /></el-icon>
+                  清除
+                </el-button>
+              </div>
+              <div class="icon-tip">建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB</div>
             </div>
           </div>
         </el-form-item>
@@ -125,9 +133,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CopyDocument } from '@element-plus/icons-vue'
+import { CopyDocument, Picture, Delete } from '@element-plus/icons-vue'
 import { getSoftwareDetail, updateSoftware, resetAPIKey } from '@/api/software'
-import FileUpload from '@/components/Upload/FileUpload.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -145,8 +152,36 @@ const form = reactive({
   icon: ''
 })
 
-// 图标输入模式：upload(上传) / url(输入链接)
-const iconMode = ref('upload')
+// 图标上传前处理
+const handleIconBeforeUpload = (file) => {
+  const isImage = file.type.startsWith('image/')
+  const isLt2M = file.size / 1024 / 1024 < 2
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('图片大小不能超过 2MB!')
+    return false
+  }
+  return true
+}
+
+// 图标上传成功
+const handleIconSuccess = (response) => {
+  if (response.code === 0) {
+    form.icon = response.data.url
+    ElMessage.success('图标上传成功')
+  } else {
+    ElMessage.error(response.message || '上传失败')
+  }
+}
+
+// 图标上传失败
+const handleIconError = () => {
+  ElMessage.error('上传失败，请检查存储配置')
+}
 
 const rules = {
   name: [
@@ -186,12 +221,6 @@ const fetchSoftwareDetail = async () => {
 // 返回列表
 const goBack = () => {
   router.push('/software/list')
-}
-
-// 图标上传成功
-const handleIconSuccess = ({ url }) => {
-  form.icon = url
-  ElMessage.success('图标上传成功')
 }
 
 // 复制到剪贴板
@@ -414,35 +443,73 @@ onMounted(() => {
   margin-top: 8px;
 }
 
-/* 图标输入模式 */
-.icon-input-mode {
-  margin-bottom: 12px;
+/* 图标样式 */
+.icon-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.icon-upload-area {
-  display: inline-block;
+.icon-uploader-inline :deep(.el-upload) {
+  display: block;
 }
 
-.icon-url-area {
+.icon-preview-box {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #dcdfe6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.icon-preview-box:hover {
+  border-color: #409eff;
+  background-color: #f5f7fa;
+}
+
+.icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.icon-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #909399;
+  font-size: 12px;
+}
+
+.icon-actions {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.icon-preview-wrapper {
-  width: 100px;
-  height: 100px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.icon-url-input {
+  width: 100%;
 }
 
-.icon-preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.icon-url-input :deep(.el-input__inner) {
+  font-size: 13px;
+}
+
+.icon-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-tip {
+  font-size: 12px;
+  color: #909399;
 }
 </style>
