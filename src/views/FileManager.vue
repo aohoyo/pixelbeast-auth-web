@@ -178,7 +178,7 @@ import {
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
 import StorageUpload from '@/components/StorageUpload.vue'
-import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl, batchDownload } from '@/api/file'
+import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl } from '@/api/file'
 
 // 文件列表
 const fileList = ref([])
@@ -231,7 +231,7 @@ const canPreview = computed(() => {
 // 当前文件夹ID（0表示根目录）
 const currentFolderId = ref(0)
 
-// 获取文件列表
+// 获取文件列表（从数据库获取）
 const fetchFileList = async () => {
   loading.value = true
   try {
@@ -299,10 +299,8 @@ const goToRoot = () => {
 
 // 跳转到指定路径
 const goToPath = (index) => {
-  // 简化处理：只支持回到根目录
-  if (index === -1) {
-    goToRoot()
-  }
+  // 简化处理
+  goToRoot()
 }
 
 // 上传文件

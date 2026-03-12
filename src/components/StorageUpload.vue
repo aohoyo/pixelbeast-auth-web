@@ -295,7 +295,7 @@ const startUpload = async () => {
           name: fileItem.name,
           url: url,
           size: fileItem.size,
-          parent_id: 0 // 上传到根目录
+          parent_id: 0
         })
       } catch (err) {
         console.error('创建文件记录失败:', err)
