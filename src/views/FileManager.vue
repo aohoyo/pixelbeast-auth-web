@@ -184,9 +184,12 @@ import {
   Download,
   View,
   Edit,
-  UploadFilled
+  UploadFilled,
+  FolderAdd,
+  DocumentAdd
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
+import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl, batchDownload } from '@/api/file'
 
 // 文件列表
 const fileList = ref([])
@@ -237,53 +240,15 @@ const canPreview = computed(() => {
 const fetchFileList = async () => {
   loading.value = true
   try {
-    // TODO: 调用后端 API 获取文件列表
-    // const res = await request.get('/files', { params: { path: currentPath.value } })
-    // fileList.value = res.data
-    
-    // 模拟数据
-    fileList.value = [
-      {
-        id: '1',
-        name: '文档',
-        type: 'folder',
-        childrenCount: 5,
-        updatedAt: '2024-03-12 10:00:00'
-      },
-      {
-        id: '2',
-        name: '图片',
-        type: 'folder',
-        childrenCount: 12,
-        updatedAt: '2024-03-12 09:30:00'
-      },
-      {
-        id: '3',
-        name: 'report.pdf',
-        type: 'file',
-        fileType: 'pdf',
-        size: 1024 * 1024 * 2.5,
-        updatedAt: '2024-03-11 15:20:00'
-      },
-      {
-        id: '4',
-        name: 'logo.png',
-        type: 'file',
-        fileType: 'image',
-        size: 1024 * 256,
-        updatedAt: '2024-03-10 08:15:00'
-      },
-      {
-        id: '5',
-        name: 'data.xlsx',
-        type: 'file',
-        fileType: 'excel',
-        size: 1024 * 1024 * 1.2,
-        updatedAt: '2024-03-09 14:30:00'
-      }
-    ]
+    const res = await getFileList({ path: currentPath.value })
+    if (res.code === 0) {
+      fileList.value = res.data || []
+    } else {
+      ElMessage.error(res.message || '获取文件列表失败')
+    }
   } catch (error) {
     ElMessage.error('获取文件列表失败')
+    console.error(error)
   } finally {
     loading.value = false
   }
@@ -381,9 +346,18 @@ const handlePreview = () => {
 }
 
 // 下载
-const handleDownload = () => {
+const handleDownload = async () => {
   if (!contextMenu.file) return
-  ElMessage.info('下载功能开发中...')
+  try {
+    const res = await getDownloadUrl(contextMenu.file.id)
+    if (res.code === 0 && res.data.url) {
+      window.open(res.data.url, '_blank')
+    } else {
+      ElMessage.error('获取下载链接失败')
+    }
+  } catch (error) {
+    ElMessage.error('下载失败')
+  }
   hideContextMenu()
 }
 
@@ -402,10 +376,14 @@ const confirmRename = async () => {
     ElMessage.warning('请输入文件名')
     return
   }
-  // TODO: 调用重命名 API
-  ElMessage.success('重命名成功')
-  renameDialog.visible = false
-  fetchFileList()
+  try {
+    await renameFile(renameDialog.file.id, { name: renameDialog.newName.trim() })
+    ElMessage.success('重命名成功')
+    renameDialog.visible = false
+    fetchFileList()
+  } catch (error) {
+    ElMessage.error('重命名失败')
+  }
 }
 
 // 删除
@@ -417,11 +395,13 @@ const handleDelete = async () => {
       '确认删除',
       { type: 'warning' }
     )
-    // TODO: 调用删除 API
+    await deleteFile(contextMenu.file.id)
     ElMessage.success('删除成功')
     fetchFileList()
-  } catch {
-    // 取消删除
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
   }
   hideContextMenu()
 }
@@ -434,18 +414,31 @@ const handleBatchDelete = async () => {
       '确认删除',
       { type: 'warning' }
     )
-    // TODO: 调用批量删除 API
+    await batchDeleteFiles(selectedFiles.value)
     ElMessage.success('删除成功')
     selectedFiles.value = []
     fetchFileList()
-  } catch {
-    // 取消删除
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
   }
 }
 
 // 批量下载
-const handleBatchDownload = () => {
-  ElMessage.info('批量下载功能开发中...')
+const handleBatchDownload = async () => {
+  try {
+    const res = await batchDownload(selectedFiles.value)
+    // 创建下载链接
+    const blob = new Blob([res])
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'download.zip'
+    link.click()
+    ElMessage.success('开始下载')
+  } catch (error) {
+    ElMessage.error('批量下载失败')
+  }
 }
 
 // 清除选择
