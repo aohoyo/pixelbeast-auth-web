@@ -228,11 +228,14 @@ const canPreview = computed(() => {
   return previewTypes.includes(contextMenu.file.fileType)
 })
 
+// 当前文件夹ID（0表示根目录）
+const currentFolderId = ref(0)
+
 // 获取文件列表
 const fetchFileList = async () => {
   loading.value = true
   try {
-    const res = await getFileList({ path: currentPath.value })
+    const res = await getFileList({ parent_id: currentFolderId.value })
     if (res.code === 0) {
       fileList.value = res.data || []
     } else {
@@ -266,7 +269,8 @@ const handleFileClick = (file) => {
 // 双击文件
 const handleFileDblClick = (file) => {
   if (file.type === 'folder') {
-    currentPath.value += '/' + file.name
+    currentFolderId.value = file.id
+    breadcrumbList.value.push(file.name)
     fetchFileList()
   } else {
     handlePreview()
@@ -288,15 +292,17 @@ const hideContextMenu = () => {
 
 // 返回根目录
 const goToRoot = () => {
-  currentPath.value = 'files'
+  currentFolderId.value = 0
+  breadcrumbList.value = []
   fetchFileList()
 }
 
 // 跳转到指定路径
 const goToPath = (index) => {
-  const parts = currentPath.value.split('/').filter(Boolean)
-  currentPath.value = parts.slice(0, index + 1).join('/')
-  fetchFileList()
+  // 简化处理：只支持回到根目录
+  if (index === -1) {
+    goToRoot()
+  }
 }
 
 // 上传文件
