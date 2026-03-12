@@ -66,20 +66,16 @@
         </el-form-item>
         
         <el-form-item label="软件图标" prop="icon">
-          <el-upload
-            class="icon-uploader"
-            action="#"
-            :show-file-list="false"
-            :auto-upload="false"
-            :on-change="handleIconChange"
-          >
-            <img v-if="form.icon" :src="form.icon" class="icon-preview" />
-            <div v-else class="icon-upload-placeholder">
-              <el-icon><Plus /></el-icon>
-              <div class="upload-text">点击上传图标</div>
-            </div>
-          </el-upload>
-          <div class="upload-tip">建议尺寸 128x128，支持 JPG/PNG</div>
+          <FileUpload
+            v-model="form.icon"
+            type="image"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            :max-size="2"
+            :path-prefix="'software/icons'"
+            placeholder="点击上传图标"
+            tip="建议尺寸 128x128，支持 JPG/PNG/GIF/WebP，最大 2MB"
+            @success="handleIconSuccess"
+          />
         </el-form-item>
         
         <el-form-item label="描述" prop="description">
@@ -112,6 +108,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, Key, View, Hide } from '@element-plus/icons-vue'
 import { createSoftware } from '@/api/software'
+import FileUpload from '@/components/Upload/FileUpload.vue'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -155,15 +152,10 @@ const goBack = () => {
   router.push('/software/list')
 }
 
-// 处理图标选择
-const handleIconChange = (file) => {
-  // TODO: 实际上传逻辑后续完善
-  // 这里先用本地预览
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    form.icon = e.target.result
-  }
-  reader.readAsDataURL(file.raw)
+// 图标上传成功
+const handleIconSuccess = ({ url }) => {
+  form.icon = url
+  ElMessage.success('图标上传成功')
 }
 
 // 生成随机 API Key
