@@ -133,14 +133,13 @@
     <el-dialog
       v-model="uploadDialog.visible"
       title="上传文件"
-      width="600px"
+      width="700px"
     >
       <StorageUpload
         ref="storageUploadRef"
         :path-prefix="currentPath"
-        :multiple="true"
-        :limit="10"
         :max-size="100"
+        :max-files="100"
         @success="handleUploadSuccess"
         @error="handleUploadError"
       />
