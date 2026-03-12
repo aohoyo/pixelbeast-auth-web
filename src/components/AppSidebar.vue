@@ -36,6 +36,11 @@
           <el-menu-item index="/versions/publish">发布版本</el-menu-item>
         </el-sub-menu>
         
+        <el-menu-item index="/files" :disabled="!storageConfigured">
+          <el-icon><Folder /></el-icon>
+          <template #title>文件管理</template>
+        </el-menu-item>
+        
         <el-sub-menu index="/system">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -64,6 +69,7 @@ import config from '@/config'
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
 import request from '@/api/request'
+import { HomeFilled, Box, Collection, Setting, FolderOpened, Folder } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

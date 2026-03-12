@@ -57,6 +57,12 @@ const routes = [
         name: 'VersionDetail',
         component: () => import('@/views/VersionPublish.vue'),
         meta: { title: '版本详情', icon: 'Document', hidden: true }
+      },
+      {
+        path: '/files',
+        name: 'FileManager',
+        component: () => import('@/views/FileManager.vue'),
+        meta: { title: '文件管理', icon: 'FolderOpened' }
       }
     ]
   },
