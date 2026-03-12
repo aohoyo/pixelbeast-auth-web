@@ -412,7 +412,15 @@ const handleDownload = async () => {
   try {
     const res = await getDownloadUrl(contextMenu.file.id)
     if (res.code === 0 && res.data.url) {
-      window.open(res.data.url, '_blank')
+      // 创建下载链接
+      const link = document.createElement('a')
+      link.href = res.data.url
+      link.download = contextMenu.file.name
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      ElMessage.success('开始下载')
     } else {
       ElMessage.error('获取下载链接失败')
     }
@@ -489,14 +497,47 @@ const handleBatchDelete = async () => {
 // 批量下载
 const handleBatchDownload = async () => {
   try {
-    const res = await batchDownload(selectedFiles.value)
-    // 创建下载链接
-    const blob = new Blob([res])
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = 'download.zip'
-    link.click()
-    ElMessage.success('开始下载')
+    ElMessage.info(`正在准备 ${selectedFiles.value.length} 个文件的下载...`)
+    
+    // 获取所有选中文件的下载链接
+    const downloadPromises = selectedFiles.value.map(async (fileId) => {
+      const file = fileList.value.find(f => f.id === fileId)
+      if (!file || file.type === 'folder') return null
+      
+      try {
+        const res = await getDownloadUrl(fileId)
+        if (res.code === 0 && res.data.url) {
+          return { name: file.name, url: res.data.url }
+        }
+      } catch (err) {
+        console.error(`获取文件 ${file.name} 下载链接失败:`, err)
+      }
+      return null
+    })
+    
+    const downloads = (await Promise.all(downloadPromises)).filter(Boolean)
+    
+    if (downloads.length === 0) {
+      ElMessage.error('没有可下载的文件')
+      return
+    }
+    
+    // 依次下载每个文件
+    for (let i = 0; i < downloads.length; i++) {
+      const { name, url } = downloads[i]
+      setTimeout(() => {
+        const link = document.createElement('a')
+        link.href = url
+        link.download = name
+        link.target = '_blank'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }, i * 500) // 每隔500ms下载一个，避免浏览器拦截
+    }
+    
+    ElMessage.success(`开始下载 ${downloads.length} 个文件`)
+    selectedFiles.value = []
   } catch (error) {
     ElMessage.error('批量下载失败')
   }
