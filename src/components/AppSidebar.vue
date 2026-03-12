@@ -116,10 +116,10 @@ onMounted(() => {
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 16px;
+  padding: 0 20px;
   background-color: #191a1c;
   border-bottom: 1px solid #2d2e2f;
+  gap: 12px;
 }
 
 .logo-img {
@@ -129,15 +129,17 @@ onMounted(() => {
 }
 
 .logo-text {
-  margin-left: 12px;
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
+  flex: 1;
 }
 
 .is-collapse .sidebar-logo {
   padding: 0;
+  justify-content: center;
+  gap: 0;
 }
 
 /* 菜单滚动区域 */
