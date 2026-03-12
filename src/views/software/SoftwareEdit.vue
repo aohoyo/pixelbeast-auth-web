@@ -218,12 +218,17 @@ const fetchSoftwareDetail = async () => {
   loading.value = true
   try {
     const res = await getSoftwareDetail(id)
-    form.name = res.name || ''
-    form.slug = res.slug || ''
-    form.apiKey = res.api_key || ''
-    form.description = res.description || ''
-    form.platform = res.platform || 'windows'
-    form.icon = res.icon || ''
+    if (res.code === 0 && res.data) {
+      const data = res.data
+      form.name = data.name || ''
+      form.slug = data.slug || ''
+      form.apiKey = data.api_key || ''
+      form.description = data.description || ''
+      form.platform = data.platform || 'windows'
+      form.icon = data.icon || ''
+    } else {
+      ElMessage.error(res.message || '获取软件详情失败')
+    }
   } catch (error) {
     ElMessage.error('获取软件详情失败')
   } finally {
