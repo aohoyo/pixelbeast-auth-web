@@ -170,6 +170,10 @@
           <el-icon><Download /></el-icon>
           下载
         </div>
+        <div class="context-menu-item" @click="handleCopyLink">
+          <el-icon><Link /></el-icon>
+          复制链接
+        </div>
         <div class="context-menu-item" @click="handleRename">
           <el-icon><Edit /></el-icon>
           重命名
@@ -229,7 +233,8 @@ import {
   FolderAdd,
   DocumentAdd,
   Grid,
-  List
+  List,
+  Link
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
 import StorageUpload from '@/components/StorageUpload.vue'
@@ -426,6 +431,24 @@ const handleDownload = async () => {
     }
   } catch (error) {
     ElMessage.error('下载失败')
+  }
+  hideContextMenu()
+}
+
+// 复制链接
+const handleCopyLink = async () => {
+  if (!contextMenu.file) return
+  try {
+    const res = await getDownloadUrl(contextMenu.file.id)
+    if (res.code === 0 && res.data.url) {
+      // 复制到剪贴板
+      await navigator.clipboard.writeText(res.data.url)
+      ElMessage.success('链接已复制到剪贴板')
+    } else {
+      ElMessage.error('获取链接失败')
+    }
+  } catch (error) {
+    ElMessage.error('复制失败')
   }
   hideContextMenu()
 }
