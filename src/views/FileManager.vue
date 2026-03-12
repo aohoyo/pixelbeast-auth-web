@@ -8,6 +8,20 @@
             <span class="title">文件管理</span>
           </div>
           <div class="header-right">
+            <el-button-group class="view-mode-toggle">
+              <el-button 
+                :type="viewMode === 'grid' ? 'primary' : ''" 
+                @click="viewMode = 'grid'"
+              >
+                <el-icon><Grid /></el-icon>
+              </el-button>
+              <el-button 
+                :type="viewMode === 'list' ? 'primary' : ''" 
+                @click="viewMode = 'list'"
+              >
+                <el-icon><List /></el-icon>
+              </el-button>
+            </el-button-group>
             <el-button type="primary" @click="handleUpload">
               <el-icon><Upload /></el-icon>
               上传文件
@@ -46,7 +60,8 @@
           <el-button type="primary" @click="handleUpload">上传文件</el-button>
         </div>
         
-        <div v-else class="file-grid">
+        <!-- 网格模式 -->
+        <div v-else-if="viewMode === 'grid'" class="file-grid">
           <div 
             v-for="file in fileList" 
             :key="file.id"
@@ -80,6 +95,44 @@
               @click.stop
             />
           </div>
+        </div>
+        
+        <!-- 列表模式 -->
+        <div v-else class="file-list-view">
+          <el-table
+            :data="fileList"
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+            @row-click="handleRowClick"
+            @row-dblclick="handleRowDblClick"
+          >
+            <el-table-column type="selection" width="55" />
+            <el-table-column label="文件名" min-width="200">
+              <template #default="{ row }">
+                <div class="file-name-cell">
+                  <FileIcon :file="row" :size="24" />
+                  <span class="file-name-text">{{ row.name }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="类型" width="100">
+              <template #default="{ row }">
+                <span v-if="row.type === 'folder'">文件夹</span>
+                <span v-else>{{ row.fileType || '文件' }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="大小" width="120">
+              <template #default="{ row }">
+                <span v-if="row.type === 'folder'">-</span>
+                <span v-else>{{ formatFileSize(row.size) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="修改时间" width="180">
+              <template #default="{ row }">
+                {{ row.updatedAt }}
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
       </div>
       
@@ -174,7 +227,9 @@ import {
   Edit,
   UploadFilled,
   FolderAdd,
-  DocumentAdd
+  DocumentAdd,
+  Grid,
+  List
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
 import StorageUpload from '@/components/StorageUpload.vue'
@@ -231,6 +286,9 @@ const canPreview = computed(() => {
 // 当前文件夹ID（0表示根目录）
 const currentFolderId = ref(0)
 
+// 视图模式：grid(网格) / list(列表)
+const viewMode = ref('grid')
+
 // 获取文件列表（从数据库获取）
 const fetchFileList = async () => {
   loading.value = true
@@ -275,6 +333,21 @@ const handleFileDblClick = (file) => {
   } else {
     handlePreview()
   }
+}
+
+// 列表模式选择变化
+const handleSelectionChange = (selection) => {
+  selectedFiles.value = selection.map(item => item.id)
+}
+
+// 列表模式行点击
+const handleRowClick = (row) => {
+  handleFileClick(row)
+}
+
+// 列表模式行双击
+const handleRowDblClick = (row) => {
+  handleFileDblClick(row)
 }
 
 // 右键菜单
@@ -640,5 +713,26 @@ onUnmounted(() => {
   height: 1px;
   background-color: #e4e7ed;
   margin: 4px 0;
+}
+
+/* 视图模式切换 */
+.view-mode-toggle {
+  margin-right: 8px;
+}
+
+/* 列表模式 */
+.file-list-view {
+  margin-top: 16px;
+}
+
+.file-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-name-text {
+  font-size: 14px;
+  color: #303133;
 }
 </style>

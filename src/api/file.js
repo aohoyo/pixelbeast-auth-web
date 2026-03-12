@@ -39,7 +39,7 @@ export const createFolder = (data) => {
  */
 export const createFile = (data) => {
   return request({
-    url: '/files',
+    url: '/files/record',
     method: 'post',
     data
   })
