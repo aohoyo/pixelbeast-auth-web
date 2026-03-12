@@ -93,6 +93,7 @@ import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, Document, Close, CircleCheck, CircleClose, Clock, FolderOpened } from '@element-plus/icons-vue'
 import { getUploadToken } from '@/api/upload'
+import { createFile } from '@/api/file'
 
 const props = defineProps({
   pathPrefix: {
@@ -287,6 +288,18 @@ const startUpload = async () => {
       fileItem.status = 'success'
       fileItem.progress = 100
       fileItem.url = url
+      
+      // 创建文件记录到数据库
+      try {
+        await createFile({
+          name: fileItem.name,
+          url: url,
+          size: fileItem.size,
+          parent_id: 0 // 上传到根目录
+        })
+      } catch (err) {
+        console.error('创建文件记录失败:', err)
+      }
       
       emit('success', { file: fileItem, url })
     } catch (error) {

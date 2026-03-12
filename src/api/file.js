@@ -30,6 +30,22 @@ export const createFolder = (data) => {
 }
 
 /**
+ * 创建文件记录（上传后调用）
+ * @param {Object} data - 文件信息
+ * @param {string} data.name - 文件名
+ * @param {string} data.url - 文件URL
+ * @param {number} data.size - 文件大小
+ * @param {number} data.parent_id - 父文件夹ID
+ */
+export const createFile = (data) => {
+  return request({
+    url: '/files',
+    method: 'post',
+    data
+  })
+}
+
+/**
  * 删除文件/文件夹
  * @param {string} id - 文件ID
  */
