@@ -311,12 +311,15 @@ const handleRefresh = () => {
 
 // 上传成功
 const handleUploadSuccess = () => {
+  ElMessage.success('上传成功')
+  uploadDialog.visible = false
   fetchFileList()
 }
 
 // 上传失败
 const handleUploadError = (error) => {
   console.error('上传失败:', error)
+  ElMessage.error('上传失败')
 }
 
 // 预览
