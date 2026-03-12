@@ -446,7 +446,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 400px;
+  
 }
 
 .icon-uploader-block :deep(.el-upload) {
