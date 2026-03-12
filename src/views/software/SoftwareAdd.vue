@@ -129,6 +129,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, Key, View, Hide, Picture, Delete } from '@element-plus/icons-vue'
 import { createSoftware } from '@/api/software'
+import { createFile } from '@/api/file'
 
 const router = useRouter()
 const formRef = ref(null)
