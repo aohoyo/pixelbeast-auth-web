@@ -55,16 +55,16 @@ request.interceptors.response.use(
       }
     }
     
-    const { code, message, data } = response.data
+    const { code, msg, data } = response.data
     
     // 业务成功
     if (code === 0 || code === 200) {
-      return data
+      return response.data  // 返回完整响应 {code, msg, data}
     }
     
     // 业务错误
-    ElMessage.error(message || '请求失败')
-    return Promise.reject(new Error(message))
+    ElMessage.error(msg || '请求失败')
+    return Promise.reject(new Error(msg))
   },
   (error) => {
     // 关闭加载
@@ -93,7 +93,7 @@ request.interceptors.response.use(
           ElMessage.error('服务器错误')
           break
         default:
-          ElMessage.error(response.data?.message || '网络错误')
+          ElMessage.error(response.data?.msg || '网络错误')
       }
     } else {
       ElMessage.error('网络连接失败')

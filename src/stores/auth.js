@@ -8,6 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
   // 用户信息
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   
+  // 存储配置状态
+  const storageConfigured = ref(localStorage.getItem('storage_configured') === 'true')
+  
   // 是否已登录
   const isLoggedIn = computed(() => !!token.value)
   
@@ -31,18 +34,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   
+  // 设置存储配置状态
+  const setStorageConfigured = (configured) => {
+    storageConfigured.value = configured
+    if (configured) {
+      localStorage.setItem('storage_configured', 'true')
+    } else {
+      localStorage.removeItem('storage_configured')
+    }
+  }
+  
   // 登录成功后调用
   const login = (newToken, userData = null) => {
     setToken(newToken)
     if (userData) {
       setUser(userData)
     }
+    // 登录时重置存储配置状态，需要重新检查
+    storageConfigured.value = false
+    localStorage.removeItem('storage_configured')
   }
   
   // 退出登录
   const logout = () => {
     setToken('')
     setUser(null)
+    setStorageConfigured(false)
   }
   
   // 检查登录状态（从 localStorage 恢复）
@@ -67,9 +84,11 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     token,
     user,
+    storageConfigured,
     isLoggedIn,
     setToken,
     setUser,
+    setStorageConfigured,
     login,
     logout,
     checkAuth

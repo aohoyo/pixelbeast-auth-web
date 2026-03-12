@@ -20,18 +20,29 @@
         <template #title>控制台</template>
       </el-menu-item>
       
-      <el-menu-item index="/software/list">
+      <el-menu-item index="/software/list" :disabled="!storageConfigured">
         <el-icon><Box /></el-icon>
         <template #title>软件管理</template>
       </el-menu-item>
       
-      <el-sub-menu index="/versions">
+      <el-sub-menu index="/versions" :disabled="!storageConfigured">
         <template #title>
           <el-icon><Collection /></el-icon>
           <span>版本管理</span>
         </template>
         <el-menu-item index="/versions">版本列表</el-menu-item>
         <el-menu-item index="/versions/publish">发布版本</el-menu-item>
+      </el-sub-menu>
+      
+      <el-sub-menu index="/system">
+        <template #title>
+          <el-icon><Setting /></el-icon>
+          <span>系统管理</span>
+        </template>
+        <el-menu-item index="/storage/config">
+          <el-icon><FolderOpened /></el-icon>
+          <template #title>存储配置</template>
+        </el-menu-item>
       </el-sub-menu>
     </el-menu>
     
@@ -45,11 +56,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { SITE_NAME, SITE_LOGO } from '@/config'
+import { useAuthStore } from '@/stores/auth'
+import request from '@/api/request'
 
 const route = useRoute()
+
+const authStore = useAuthStore()
+const storageConfigured = computed(() => authStore.storageConfigured)
+
+// 加载存储配置状态
+const loadStorageStatus = async () => {
+  try {
+    const res = await request.get('/storage/config')
+    if (res.code === 0) {
+      authStore.setStorageConfigured(res.data.has_config && res.data.status === 1)
+    }
+  } catch (error) {
+    console.error('Failed to load storage status:', error)
+  }
+}
+
+onMounted(() => {
+  loadStorageStatus()
+})
 
 const isCollapsed = ref(false)
 const siteName = SITE_NAME
@@ -138,6 +170,14 @@ const toggleCollapse = () => {
 
 .sidebar-menu :deep(.el-sub-menu .el-menu-item) {
   padding-left: 48px !important;
+}
+
+/* 禁用菜单样式 */
+.sidebar-menu :deep(.el-menu-item.is-disabled),
+.sidebar-menu :deep(.el-sub-menu.is-disabled > .el-sub-menu__title) {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none;
 }
 
 .collapse-btn {
