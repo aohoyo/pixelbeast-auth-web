@@ -26,37 +26,13 @@ const routes = [
         path: '/software/list',
         name: 'SoftwareList',
         component: () => import('@/views/software/SoftwareList.vue'),
-        meta: { title: '软件列表', icon: 'Box' }
-      },
-      {
-        path: '/software/add',
-        name: 'SoftwareAdd',
-        component: () => import('@/views/software/SoftwareAdd.vue'),
-        meta: { title: '新增软件', icon: 'Plus', hidden: true }
-      },
-      {
-        path: '/software/edit/:id',
-        name: 'SoftwareEdit',
-        component: () => import('@/views/software/SoftwareEdit.vue'),
-        meta: { title: '编辑软件', icon: 'Edit', hidden: true }
+        meta: { title: '软件管理', icon: 'Box' }
       },
       {
         path: '/versions',
         name: 'VersionList',
         component: () => import('@/views/VersionList.vue'),
-        meta: { title: '版本列表', icon: 'Collection' }
-      },
-      {
-        path: '/versions/publish',
-        name: 'VersionPublish',
-        component: () => import('@/views/VersionPublish.vue'),
-        meta: { title: '发布版本', icon: 'Upload', hidden: true }
-      },
-      {
-        path: '/versions/detail/:id',
-        name: 'VersionDetail',
-        component: () => import('@/views/VersionPublish.vue'),
-        meta: { title: '版本详情', icon: 'Document', hidden: true }
+        meta: { title: '版本管理', icon: 'Collection' }
       },
       {
         path: '/files',
