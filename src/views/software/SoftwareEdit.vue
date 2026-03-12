@@ -65,10 +65,10 @@
         </el-form-item>
         
         <el-form-item label="软件图标" prop="icon">
-          <div class="icon-wrapper">
-            <!-- 预览图 -->
+          <div class="icon-wrapper-vertical">
+            <!-- 上传区域 -->
             <el-upload
-              class="icon-uploader-inline"
+              class="icon-uploader-block"
               action="/api/v1/upload"
               :headers="uploadHeaders"
               :data="{ pathPrefix: 'software/icons' }"
@@ -82,13 +82,13 @@
                 <img v-if="form.icon" :src="form.icon" class="icon-img" alt="图标" />
                 <div v-else class="icon-placeholder">
                   <el-icon :size="32"><Picture /></el-icon>
-                  <span>点击上传</span>
+                  <span>点击上传图标</span>
                 </div>
               </div>
             </el-upload>
             
-            <!-- 右侧操作区 -->
-            <div class="icon-actions">
+            <!-- 下方操作区 -->
+            <div class="icon-actions-vertical">
               <el-input
                 v-model="form.icon"
                 placeholder="输入图标URL地址"
@@ -96,7 +96,7 @@
                 class="icon-url-input"
               />
               <div class="icon-buttons">
-                <el-button size="small" @click="form.icon = ''" v-if="form.icon">
+                <el-button type="warning" size="small" @click="form.icon = ''" v-if="form.icon">
                   <el-icon><Delete /></el-icon>
                   清除
                 </el-button>
@@ -449,20 +449,25 @@ onMounted(() => {
   margin-top: 8px;
 }
 
-/* 图标样式 */
-.icon-wrapper {
+/* 图标样式 - 垂直布局 */
+.icon-wrapper-vertical {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 16px;
+  max-width: 400px;
 }
 
-.icon-uploader-inline :deep(.el-upload) {
+.icon-uploader-block :deep(.el-upload) {
   display: block;
 }
 
+.icon-uploader-block :deep(.el-upload-list) {
+  margin-top: 8px;
+}
+
 .icon-preview-box {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border: 2px dashed #dcdfe6;
   border-radius: 8px;
   display: flex;
@@ -471,7 +476,6 @@ onMounted(() => {
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s;
-  flex-shrink: 0;
 }
 
 .icon-preview-box:hover {
@@ -494,8 +498,7 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.icon-actions {
-  flex: 1;
+.icon-actions-vertical {
   display: flex;
   flex-direction: column;
   gap: 12px;
