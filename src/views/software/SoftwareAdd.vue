@@ -441,7 +441,7 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  
+  width: 100%;
 }
 
 .icon-uploader-block :deep(.el-upload) {

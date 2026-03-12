@@ -443,6 +443,7 @@ onMounted(() => {
 
 /* 图标样式 - 垂直布局 */
 .icon-wrapper-vertical {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
