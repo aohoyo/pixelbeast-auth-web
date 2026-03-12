@@ -204,12 +204,11 @@
           :before-upload="handleBeforeUpload"
           :on-success="handleUploadSuccess"
           :on-error="handleUploadError"
-          drag
         >
-          <el-icon class="el-icon--upload" :size="64"><UploadFilled /></el-icon>
-          <div class="el-upload__text">
-            将文件拖到此处，或<em>点击上传</em>
-          </div>
+          <el-button type="primary">
+            <el-icon><Upload /></el-icon>
+            点击上传
+          </el-button>
           <template #tip>
             <div class="el-upload__tip">
               支持任意类型文件，单个文件最大 100MB
