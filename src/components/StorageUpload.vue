@@ -240,36 +240,48 @@ const startUpload = async () => {
     
     try {
       // 1. 获取上传凭证
+      console.log('Getting upload token for:', fileItem.name)
       const tokenRes = await getUploadToken({
         filename: fileItem.name,
         pathPrefix: props.pathPrefix,
         storageType: 'user'
       })
       
+      console.log('Token response:', tokenRes)
+      
       if (tokenRes.code !== 0) {
         throw new Error(tokenRes.message || '获取上传凭证失败')
       }
       
       const token = tokenRes.data
+      console.log('Got token:', token)
       
       // 2. 根据存储类型选择上传方式
       let url
-      switch (token.storageType) {
-        case 'aliyun':
-          url = await uploadToAliyun(fileItem, token)
-          break
-        case 'tencent':
-          url = await uploadToTencent(fileItem, token)
-          break
-        case 'qiniu':
-          url = await uploadToQiniu(fileItem, token)
-          break
-        case 'minio':
-          url = await uploadToMinio(fileItem, token)
-          break
-        default:
-          // 默认使用后端直传
-          url = await uploadViaBackend(fileItem)
+      console.log('Storage type:', token.storageType)
+      console.log('Token:', token)
+      
+      try {
+        switch (token.storageType) {
+          case 'aliyun':
+            url = await uploadToAliyun(fileItem, token)
+            break
+          case 'tencent':
+            url = await uploadToTencent(fileItem, token)
+            break
+          case 'qiniu':
+            url = await uploadToQiniu(fileItem, token)
+            break
+          case 'minio':
+            url = await uploadToMinio(fileItem, token)
+            break
+          default:
+            // 默认使用后端直传
+            url = await uploadViaBackend(fileItem)
+        }
+      } catch (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw uploadError
       }
       
       fileItem.status = 'success'
