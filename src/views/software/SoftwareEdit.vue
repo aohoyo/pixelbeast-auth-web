@@ -139,7 +139,7 @@ const resetting = ref(false)
 const form = reactive({
   name: '',
   slug: '',
-  apiKey: '',
+  api_key: '',
   description: '',
   platform: 'windows',
   icon: ''
@@ -222,7 +222,7 @@ const fetchSoftwareDetail = async () => {
       const data = res.data
       form.name = data.name || ''
       form.slug = data.slug || ''
-      form.apiKey = data.api_key || ''
+      form.api_key = data.api_key || ''
       form.description = data.description || ''
       form.platform = data.platform || 'windows'
       form.icon = data.icon || ''
@@ -315,7 +315,7 @@ const handleResetAPIKey = async () => {
     resetting.value = true
     const id = route.params.id
     const res = await resetAPIKey(id)
-    form.apiKey = res.api_key
+    form.api_key = res.api_key
     ElMessage.success('API Key 已重置，请妥善保存新的 Key')
   } catch (error) {
     if (error !== 'cancel') {
