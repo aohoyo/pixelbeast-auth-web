@@ -39,6 +39,12 @@ const routes = [
         name: 'FileManager',
         component: () => import('@/views/FileManager.vue'),
         meta: { title: '文件管理', icon: 'FolderOpened' }
+      },
+      {
+        path: '/signing-keys',
+        name: 'SigningKeyList',
+        component: () => import('@/views/SigningKeyList.vue'),
+        meta: { title: '签名密钥', icon: 'Key' }
       }
     ]
   },

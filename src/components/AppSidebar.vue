@@ -50,6 +50,10 @@
             <el-icon><FolderOpened /></el-icon>
             <template #title>存储配置</template>
           </el-menu-item>
+          <el-menu-item index="/signing-keys">
+            <el-icon><Key /></el-icon>
+            <template #title>签名密钥</template>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-scrollbar>
@@ -69,7 +73,7 @@ import config from '@/config'
 import { useAuthStore } from '@/stores/auth'
 import { useConfigStore } from '@/stores/config'
 import request from '@/api/request'
-import { HomeFilled, Box, Collection, Setting, FolderOpened, Folder } from '@element-plus/icons-vue'
+import { HomeFilled, Box, Collection, Setting, FolderOpened, Folder, Key } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

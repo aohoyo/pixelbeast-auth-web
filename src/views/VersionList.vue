@@ -215,6 +215,7 @@
           </div>
         </el-form-item>
         
+        <!-- 文件签名信息（编辑模式显示） -->
         <el-form-item v-if="isEdit && form.package_hash" label="文件签名">
           <div class="hash-info">
             <div class="hash-row">
@@ -227,6 +228,18 @@
               <el-button type="primary" link size="small" @click="copyHash">
                 <el-icon><CopyDocument /></el-icon>复制
               </el-button>
+            </div>
+            <!-- 签名信息 -->
+            <div v-if="form.signature" class="hash-row">
+              <span class="hash-label">签名：</span>
+              <code class="hash-value signature-value">{{ form.signature.substring(0, 50) }}...</code>
+              <el-button type="primary" link size="small" @click="copySignature">
+                <el-icon><CopyDocument /></el-icon>复制
+              </el-button>
+            </div>
+            <div v-if="form.signing_key_id" class="hash-row">
+              <span class="hash-label">签名密钥：</span>
+              <el-tag size="small" type="success">已签名</el-tag>
             </div>
           </div>
         </el-form-item>
@@ -310,6 +323,8 @@ const form = reactive({
   package_url: '',
   package_hash: '',
   package_hash_algo: '',
+  signature: '',
+  signing_key_id: 0,
   file_size: 0,
   min_version: '',
   force_update: false,
@@ -351,6 +366,8 @@ const resetForm = () => {
   form.package_url = ''
   form.package_hash = ''
   form.package_hash_algo = ''
+  form.signature = ''
+  form.signing_key_id = 0
   form.file_size = 0
   form.min_version = ''
   form.force_update = false
@@ -419,6 +436,8 @@ const handleEdit = async (row) => {
     form.package_url = data.package_url || ''
     form.package_hash = data.package_hash || ''
     form.package_hash_algo = data.package_hash_algo || 'sha256'
+    form.signature = data.signature || ''
+    form.signing_key_id = data.signing_key_id || 0
     form.file_size = data.package_size || 0
     form.min_version = data.min_version || ''
     form.force_update = data.is_forced || false
@@ -479,6 +498,33 @@ const copyHash = async () => {
       document.execCommand('copy')
       document.body.removeChild(textArea)
       ElMessage.success('哈希值已复制')
+    }
+  } catch (err) {
+    ElMessage.error('复制失败')
+  }
+}
+
+// 复制签名
+const copySignature = async () => {
+  if (!form.signature) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+  
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(form.signature)
+      ElMessage.success('签名已复制')
+    } else {
+      const textArea = document.createElement('textarea')
+      textArea.value = form.signature
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      ElMessage.success('签名已复制')
     }
   } catch (err) {
     ElMessage.error('复制失败')
@@ -718,6 +764,11 @@ onMounted(() => {
   border-radius: 4px;
   word-break: break-all;
   flex: 1;
+}
+
+.signature-value {
+  background: #fef3cd;
+  color: #856404;
 }
 
 /* 灰度配置样式 */
