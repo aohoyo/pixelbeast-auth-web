@@ -215,6 +215,22 @@
           </div>
         </el-form-item>
         
+        <el-form-item v-if="isEdit && form.package_hash" label="文件签名">
+          <div class="hash-info">
+            <div class="hash-row">
+              <span class="hash-label">算法：</span>
+              <el-tag size="small" type="info">{{ form.package_hash_algo?.toUpperCase() || 'SHA256' }}</el-tag>
+            </div>
+            <div class="hash-row">
+              <span class="hash-label">哈希值：</span>
+              <code class="hash-value">{{ form.package_hash }}</code>
+              <el-button type="primary" link size="small" @click="copyHash">
+                <el-icon><CopyDocument /></el-icon>复制
+              </el-button>
+            </div>
+          </div>
+        </el-form-item>
+        
         <el-form-item label="附加选项">
           <div class="extra-options">
             <el-checkbox v-model="form.force_update">强制更新</el-checkbox>
@@ -225,6 +241,26 @@
             />
           </div>
         </el-form-item>
+        
+        <!-- 灰度发布配置（仅编辑模式显示） -->
+        <template v-if="isEdit">
+          <el-divider content-position="left">灰度发布</el-divider>
+          <el-form-item label="启用灰度">
+            <el-switch v-model="form.gray_enabled" />
+            <span class="gray-tip">开启后，新版本将按比例推送给部分用户</span>
+          </el-form-item>
+          <el-form-item v-if="form.gray_enabled" label="灰度比例">
+            <el-slider v-model="form.gray_percent" :min="1" :max="100" show-input />
+          </el-form-item>
+          <el-form-item v-if="form.gray_enabled" label="灰度状态">
+            <el-radio-group v-model="form.gray_status">
+              <el-radio :label="0">未开始</el-radio>
+              <el-radio :label="1">进行中</el-radio>
+              <el-radio :label="2">已完成</el-radio>
+              <el-radio :label="3">已暂停</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </template>
       </el-form>
       
       <template #footer>
@@ -272,9 +308,15 @@ const form = reactive({
   status: 'published',
   changelog: '',
   package_url: '',
+  package_hash: '',
+  package_hash_algo: '',
   file_size: 0,
   min_version: '',
-  force_update: false
+  force_update: false,
+  // 灰度配置
+  gray_enabled: false,
+  gray_percent: 10,
+  gray_status: 0
 })
 
 // 上传配置
@@ -307,9 +349,14 @@ const resetForm = () => {
   form.status = 'published'
   form.changelog = ''
   form.package_url = ''
+  form.package_hash = ''
+  form.package_hash_algo = ''
   form.file_size = 0
   form.min_version = ''
   form.force_update = false
+  form.gray_enabled = false
+  form.gray_percent = 10
+  form.gray_status = 0
   fileList.value = []
 }
 
@@ -369,9 +416,15 @@ const handleEdit = async (row) => {
     form.status = data.status || 'draft'
     form.changelog = data.changelog || ''
     form.package_url = data.package_url || ''
+    form.package_hash = data.package_hash || ''
+    form.package_hash_algo = data.package_hash_algo || 'sha256'
     form.file_size = data.file_size || 0
     form.min_version = data.min_version || ''
     form.force_update = data.force_update || false
+    // 灰度配置
+    form.gray_enabled = data.gray_enabled || false
+    form.gray_percent = data.gray_percent || 10
+    form.gray_status = data.gray_status || 0
     dialogVisible.value = true
   } catch (error) {
     ElMessage.error('获取版本信息失败')
@@ -402,6 +455,33 @@ const handleUploadSuccess = (response) => {
 // 上传失败
 const handleUploadError = () => {
   ElMessage.error('上传失败，请检查存储配置')
+}
+
+// 复制 hash
+const copyHash = async () => {
+  if (!form.package_hash) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+  
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(form.package_hash)
+      ElMessage.success('哈希值已复制')
+    } else {
+      const textArea = document.createElement('textarea')
+      textArea.value = form.package_hash
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      ElMessage.success('哈希值已复制')
+    }
+  } catch (err) {
+    ElMessage.error('复制失败')
+  }
 }
 
 // 提交表单
@@ -600,6 +680,47 @@ onMounted(() => {
 .extra-options {
   display: flex;
   align-items: center;
+}
+
+/* Hash 信息样式 */
+.hash-info {
+  background: #f5f7fa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.hash-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hash-row + .hash-row {
+  margin-top: 8px;
+}
+
+.hash-label {
+  font-size: 13px;
+  color: #606266;
+  flex-shrink: 0;
+}
+
+.hash-value {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  background: #e8e8e8;
+  padding: 4px 8px;
+  border-radius: 4px;
+  word-break: break-all;
+  flex: 1;
+}
+
+/* 灰度配置样式 */
+.gray-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 12px;
 }
 
 /* 响应式 */
