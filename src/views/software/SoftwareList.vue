@@ -108,7 +108,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? '编辑软件' : '新增软件'"
-      width="560px"
+      width="650px"
       :close-on-click-modal="false"
       destroy-on-close
     >
@@ -279,6 +279,9 @@ const rules = {
   ],
   platform: [
     { required: true, message: '请选择平台', trigger: 'change' }
+  ],
+  api_key: [
+    { required: true, message: '请输入或生成通讯密钥', trigger: 'blur' }
   ]
 }
 
@@ -572,7 +575,7 @@ onActivated(() => {
 
 .api-key-input-group {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
   width: 100%;
 }
