@@ -45,6 +45,12 @@ const routes = [
         name: 'SigningKeyList',
         component: () => import('@/views/SigningKeyList.vue'),
         meta: { title: '签名密钥', icon: 'Key' }
+      },
+      {
+        path: '/api-docs',
+        name: 'ApiDocs',
+        component: () => import('@/views/ApiDocs.vue'),
+        meta: { title: 'API文档', icon: 'Document' }
       }
     ]
   },
