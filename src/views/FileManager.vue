@@ -62,6 +62,16 @@
               </el-button>
             </el-button-group>
             
+            <!-- 类型筛选 -->
+            <el-select v-model="fileTypeFilter" placeholder="类型筛选" clearable style="width: 120px" @change="fetchFileList">
+              <el-option label="全部类型" value="" />
+              <el-option label="图片" value="image" />
+              <el-option label="视频" value="video" />
+              <el-option label="音频" value="audio" />
+              <el-option label="文档" value="document" />
+              <el-option label="其他" value="other" />
+            </el-select>
+            
             <el-button @click="handleCreateFolder">
               <el-icon><FolderAdd /></el-icon>
               新建文件夹
@@ -411,6 +421,7 @@ const currentPath = ref('files')
 const searchKeyword = ref('')
 const sortField = ref('updated_at')
 const sortOrder = ref('desc')
+const fileTypeFilter = ref('')
 
 // 存储统计
 const storageStats = ref(null)
@@ -544,7 +555,8 @@ const fetchFileList = async () => {
       parent_id: currentFolderId.value,
       search: searchKeyword.value,
       sort: sortField.value,
-      order: sortOrder.value
+      order: sortOrder.value,
+      type: fileTypeFilter.value
     }
     const res = await getFileList(params)
     if (res.code === 0) {
