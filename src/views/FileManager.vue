@@ -204,20 +204,32 @@
             </el-table-column>
             <el-table-column label="操作" width="200" fixed="right">
               <template #default="{ row }">
-                <el-button-group>
-                  <el-button size="small" @click="previewFile(row)" v-if="row.fileType === 'image'">
-                    <el-icon><View /></el-icon>
-                  </el-button>
-                  <el-button size="small" @click="downloadFile(row)">
-                    <el-icon><Download /></el-icon>
-                  </el-button>
-                  <el-button size="small" @click="copyFileLink(row)">
-                    <el-icon><Link /></el-icon>
+                <!-- 文件夹操作 -->
+                <template v-if="row.type === 'folder'">
+                  <el-button size="small" @click="handleFileDblClick(row)">
+                    <el-icon><FolderOpened /></el-icon>
                   </el-button>
                   <el-button size="small" type="danger" @click="handleDeleteFile(row)">
                     <el-icon><Delete /></el-icon>
                   </el-button>
-                </el-button-group>
+                </template>
+                <!-- 文件操作 -->
+                <template v-else>
+                  <el-button-group>
+                    <el-button size="small" @click="previewFile(row)" v-if="row.fileType === 'image'">
+                      <el-icon><View /></el-icon>
+                    </el-button>
+                    <el-button size="small" @click="downloadFile(row)">
+                      <el-icon><Download /></el-icon>
+                    </el-button>
+                    <el-button size="small" @click="copyFileLink(row)">
+                      <el-icon><Link /></el-icon>
+                    </el-button>
+                    <el-button size="small" type="danger" @click="handleDeleteFile(row)">
+                      <el-icon><Delete /></el-icon>
+                    </el-button>
+                  </el-button-group>
+                </template>
               </template>
             </el-table-column>
           </el-table>
@@ -250,19 +262,33 @@
         class="context-menu"
         :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
       >
-        <div class="context-menu-item" @click="handlePreview" v-if="canPreview">
-          <el-icon><View /></el-icon>
-          预览
-        </div>
-        <div class="context-menu-item" @click="handleDownload">
-          <el-icon><Download /></el-icon>
-          下载
-        </div>
-        <div class="context-menu-item" @click="handleCopyLink">
-          <el-icon><Link /></el-icon>
-          复制链接
-        </div>
-        <div class="context-menu-divider"></div>
+        <!-- 文件夹专属操作 -->
+        <template v-if="contextMenuFile?.type === 'folder'">
+          <div class="context-menu-item" @click="handleOpenFolder">
+            <el-icon><FolderOpened /></el-icon>
+            打开
+          </div>
+          <div class="context-menu-divider"></div>
+        </template>
+        
+        <!-- 文件专属操作 -->
+        <template v-if="contextMenuFile?.type !== 'folder'">
+          <div class="context-menu-item" @click="handlePreview" v-if="canPreview">
+            <el-icon><View /></el-icon>
+            预览
+          </div>
+          <div class="context-menu-item" @click="handleDownload">
+            <el-icon><Download /></el-icon>
+            下载
+          </div>
+          <div class="context-menu-item" @click="handleCopyLink">
+            <el-icon><Link /></el-icon>
+            复制链接
+          </div>
+          <div class="context-menu-divider"></div>
+        </template>
+        
+        <!-- 通用操作 -->
         <div class="context-menu-item" @click="openMoveDialog">
           <el-icon><FolderRemove /></el-icon>
           移动到...
@@ -492,9 +518,13 @@ const renameDialog = reactive({
 // 是否可以预览
 const canPreview = computed(() => {
   if (!contextMenu.file) return false
+  if (contextMenu.file.type === 'folder') return false
   const previewTypes = ['image', 'video', 'audio', 'pdf', 'txt']
   return previewTypes.includes(contextMenu.file.fileType)
 })
+
+// 右键菜单文件
+const contextMenuFile = computed(() => contextMenu.file)
 
 // 当前文件夹ID（0表示根目录）
 const currentFolderId = ref(0)
@@ -729,6 +759,16 @@ const handleFileDblClick = (file) => {
     fetchFileList()
   } else {
     handlePreview()
+  }
+}
+
+// 打开文件夹（右键菜单）
+const handleOpenFolder = () => {
+  if (contextMenu.file && contextMenu.file.type === 'folder') {
+    currentFolderId.value = contextMenu.file.id
+    breadcrumbList.value.push(contextMenu.file.name)
+    fetchFileList()
+    hideContextMenu()
   }
 }
 

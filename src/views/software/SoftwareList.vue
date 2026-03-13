@@ -175,6 +175,7 @@
               :before-upload="handleIconBeforeUpload"
               :on-success="handleIconSuccess"
               :on-error="handleIconError"
+              :on-progress="handleIconProgress"
             >
               <div class="icon-preview-box">
                 <img v-if="form.icon" :src="form.icon" class="icon-img" alt="图标" />
@@ -184,6 +185,13 @@
                 </div>
               </div>
             </el-upload>
+            <!-- 上传进度条 -->
+            <el-progress 
+              v-if="iconUploadProgress > 0 && iconUploadProgress < 100" 
+              :percentage="iconUploadProgress" 
+              :stroke-width="6"
+              style="margin-top: 8px;"
+            />
             <el-input
               v-model="form.icon"
               placeholder="或输入图标URL"
@@ -237,6 +245,7 @@ const editId = ref(null)
 const formRef = ref(null)
 const submitting = ref(false)
 const showAPIKey = ref(false)
+const iconUploadProgress = ref(0)
 
 const form = reactive({
   name: '',
@@ -386,11 +395,22 @@ const handleIconBeforeUpload = (file) => {
     ElMessage.error('图片大小不能超过 2MB!')
     return false
   }
+  iconUploadProgress.value = 0 // 重置进度
   return true
+}
+
+// 图标上传进度
+const handleIconProgress = (event) => {
+  iconUploadProgress.value = Math.round(event.percent)
 }
 
 // 图标上传成功
 const handleIconSuccess = (response) => {
+  iconUploadProgress.value = 100 // 完成进度
+  setTimeout(() => {
+    iconUploadProgress.value = 0 // 3秒后隐藏进度条
+  }, 1000)
+  
   if (response.code === 0) {
     form.icon = response.data.url
     ElMessage.success('图标上传成功')
@@ -401,6 +421,7 @@ const handleIconSuccess = (response) => {
 
 // 图标上传失败
 const handleIconError = () => {
+  iconUploadProgress.value = 0 // 重置进度
   ElMessage.error('上传失败，请检查存储配置')
 }
 

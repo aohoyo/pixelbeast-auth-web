@@ -1,1 +1,0 @@
-import{z as r}from"./index-C3XNN5Px.js";const o=e=>r({url:"/version",method:"get",params:e}),n=e=>r({url:`/version/${e}`,method:"get"}),u=e=>r({url:"/version",method:"post",data:e}),i=(e,t)=>r({url:`/version/${e}`,method:"put",data:t}),a=e=>r({url:`/version/${e}`,method:"delete"});export{n as a,a as d,o as g,u as p,i as u};
