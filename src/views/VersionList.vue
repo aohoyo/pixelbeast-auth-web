@@ -29,8 +29,8 @@
               style="width: 100px"
               @change="handleStatusChange"
             >
-              <el-option label="已发布" value="published" />
-              <el-option label="草稿" value="draft" />
+              <el-option label="已发布" :value="1" />
+              <el-option label="草稿" :value="0" />
             </el-select>
             <el-button type="primary" @click="handleCreate">
               <el-icon><Plus /></el-icon>发布版本
@@ -413,14 +413,15 @@ const handleEdit = async (row) => {
     form.software_id = data.software_id
     form.version = data.version
     form.channel = data.channel || 'stable'
-    form.status = data.status || 'draft'
+    // 后端状态是数字：1=发布, 0=草稿
+    form.status = data.status === 1 ? 'published' : 'draft'
     form.changelog = data.changelog || ''
     form.package_url = data.package_url || ''
     form.package_hash = data.package_hash || ''
     form.package_hash_algo = data.package_hash_algo || 'sha256'
-    form.file_size = data.file_size || 0
+    form.file_size = data.package_size || 0
     form.min_version = data.min_version || ''
-    form.force_update = data.force_update || false
+    form.force_update = data.is_forced || false
     // 灰度配置
     form.gray_enabled = data.gray_enabled || false
     form.gray_percent = data.gray_percent || 10
@@ -491,7 +492,14 @@ const handleSubmit = async () => {
   
   submitting.value = true
   try {
-    const data = { ...form }
+    const data = { 
+      ...form,
+      // 转换状态：前端字符串 -> 后端数字
+      status: form.status === 'published' ? 1 : 0,
+      // 转换字段名
+      is_forced: form.force_update,
+      package_size: form.file_size
+    }
     if (isEdit.value) {
       await updateVersion(editId.value, data)
       ElMessage.success('更新成功')
@@ -510,7 +518,7 @@ const handleSubmit = async () => {
 
 // 保存草稿
 const handleSaveDraft = async () => {
-  form.status = 'draft'
+  form.status = 'draft'  // 会在handleSubmit中转换为0
   await handleSubmit()
 }
 
@@ -591,20 +599,16 @@ const getChannelLabel = (channel) => {
 
 // 获取状态类型
 const getStatusType = (status) => {
-  const map = {
-    published: 'success',
-    draft: 'info'
-  }
-  return map[status] || 'info'
+  // 后端返回数字：1=发布, 0=草稿
+  if (status === 1 || status === 'published') return 'success'
+  return 'info'
 }
 
 // 获取状态标签
 const getStatusLabel = (status) => {
-  const map = {
-    published: '已发布',
-    draft: '草稿'
-  }
-  return map[status] || status
+  // 后端返回数字：1=发布, 0=草稿
+  if (status === 1 || status === 'published') return '已发布'
+  return '草稿'
 }
 
 // 格式化数字
