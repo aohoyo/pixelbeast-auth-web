@@ -585,6 +585,15 @@ onActivated(() => {
   min-width: 200px;
 }
 
+.api-key-input-group :deep(.el-button) {
+  margin: 0;
+}
+
+.api-key-input-group :deep(.el-input) {
+  flex: 1;
+  min-width: 200px;
+}
+
 .icon-wrapper {
   width: 100%;
 }
