@@ -621,23 +621,35 @@ onActivated(() => {
 }
 
 /* 进度条样式 - 确保可见 */
+.icon-wrapper {
+  width: 100px;
+  position: relative;
+}
+
 .icon-wrapper :deep(.el-progress) {
   display: block !important;
-  width: 100%;
+  width: 100px;
+  margin-top: 8px;
 }
 
 .icon-wrapper :deep(.el-progress-bar) {
   display: block !important;
+  padding-right: 0;
 }
 
 .icon-wrapper :deep(.el-progress-bar__outer) {
   display: block !important;
+  height: 6px !important;
   background-color: #ebeef5;
-  border-radius: 100px;
+  border-radius: 3px;
 }
 
 .icon-wrapper :deep(.el-progress-bar__inner) {
-  border-radius: 100px;
+  border-radius: 3px;
+}
+
+.icon-wrapper :deep(.el-progress__text) {
+  display: none !important;
 }
 
 /* 响应式 */
