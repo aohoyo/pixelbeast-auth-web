@@ -3,15 +3,33 @@ import request from './request'
 /**
  * 获取文件列表
  * @param {Object} params - 查询参数
- * @param {string} params.path - 路径
- * @param {number} params.page - 页码
- * @param {number} params.pageSize - 每页数量
+ * @param {number} params.parent_id - 父文件夹ID
+ * @param {string} params.search - 搜索关键词
+ * @param {string} params.sort - 排序字段 (name/size/updated_at)
+ * @param {string} params.order - 排序方式 (asc/desc)
+ * @param {string} params.type - 文件类型筛选
  */
 export const getFileList = (params) => {
   return request({
     url: '/files',
     method: 'get',
-    params: { parent_id: params.parent_id || 0 }
+    params: {
+      parent_id: params.parent_id || 0,
+      search: params.search,
+      sort: params.sort,
+      order: params.order,
+      type: params.type
+    }
+  })
+}
+
+/**
+ * 获取存储统计
+ */
+export const getStorageStats = () => {
+  return request({
+    url: '/files/stats',
+    method: 'get'
   })
 }
 
@@ -44,6 +62,38 @@ export const createFile = (data) => {
     url: '/files/record',
     method: 'post',
     data
+  })
+}
+
+/**
+ * 移动文件
+ * @param {number[]} fileIds - 文件ID数组
+ * @param {number} targetId - 目标文件夹ID
+ */
+export const moveFiles = (fileIds, targetId) => {
+  return request({
+    url: '/files/move',
+    method: 'post',
+    data: {
+      file_ids: fileIds,
+      target_id: targetId
+    }
+  })
+}
+
+/**
+ * 复制文件
+ * @param {number[]} fileIds - 文件ID数组
+ * @param {number} targetId - 目标文件夹ID
+ */
+export const copyFiles = (fileIds, targetId) => {
+  return request({
+    url: '/files/copy',
+    method: 'post',
+    data: {
+      file_ids: fileIds,
+      target_id: targetId
+    }
   })
 }
 

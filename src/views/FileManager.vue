@@ -8,6 +8,31 @@
             <span class="title">文件管理</span>
           </div>
           <div class="header-right">
+            <!-- 搜索框 -->
+            <el-input
+              v-model="searchKeyword"
+              placeholder="搜索文件..."
+              clearable
+              style="width: 200px"
+              @keyup.enter="handleSearch"
+              @clear="handleSearch"
+            >
+              <template #prefix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
+            
+            <!-- 排序 -->
+            <el-select v-model="sortField" placeholder="排序" style="width: 120px" @change="fetchFileList">
+              <el-option label="修改时间" value="updated_at" />
+              <el-option label="名称" value="name" />
+              <el-option label="大小" value="size" />
+            </el-select>
+            <el-select v-model="sortOrder" style="width: 90px" @change="fetchFileList">
+              <el-option label="降序" value="desc" />
+              <el-option label="升序" value="asc" />
+            </el-select>
+            
             <el-button-group class="view-mode-toggle">
               <el-button 
                 :type="viewMode === 'grid' ? 'primary' : ''" 
@@ -22,6 +47,11 @@
                 <el-icon><List /></el-icon>
               </el-button>
             </el-button-group>
+            
+            <el-button @click="handleCreateFolder">
+              <el-icon><FolderAdd /></el-icon>
+              新建文件夹
+            </el-button>
             <el-button type="primary" @click="handleUpload">
               <el-icon><Upload /></el-icon>
               上传文件
@@ -33,6 +63,22 @@
           </div>
         </div>
       </template>
+      
+      <!-- 存储统计 -->
+      <div class="storage-stats" v-if="storageStats">
+        <div class="stats-item">
+          <el-icon><FolderOpened /></el-icon>
+          <span>文件夹: {{ storageStats.total_folders }}</span>
+        </div>
+        <div class="stats-item">
+          <el-icon><Document /></el-icon>
+          <span>文件: {{ storageStats.total_files }}</span>
+        </div>
+        <div class="stats-item">
+          <el-icon><Coin /></el-icon>
+          <span>已用空间: {{ formatFileSize(storageStats.total_size) }}</span>
+        </div>
+      </div>
       
       <!-- 路径导航 -->
       <div class="breadcrumb-wrapper">
@@ -278,10 +324,14 @@ import {
   DocumentAdd,
   Grid,
   List,
-  Link
+  Link,
+  Search,
+  Document,
+  Coin,
+  Folder
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
-import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl } from '@/api/file'
+import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl, getStorageStats, moveFiles, copyFiles } from '@/api/file'
 import { createFile } from '@/api/file'
 
 // 文件列表
@@ -289,6 +339,14 @@ const fileList = ref([])
 const loading = ref(false)
 const selectedFiles = ref([])
 const currentPath = ref('files')
+
+// 搜索和排序
+const searchKeyword = ref('')
+const sortField = ref('updated_at')
+const sortOrder = ref('desc')
+
+// 存储统计
+const storageStats = ref(null)
 
 // 面包屑导航
 const breadcrumbList = computed(() => {
@@ -398,7 +456,13 @@ const viewMode = ref('grid')
 const fetchFileList = async () => {
   loading.value = true
   try {
-    const res = await getFileList({ parent_id: currentFolderId.value })
+    const params = {
+      parent_id: currentFolderId.value,
+      search: searchKeyword.value,
+      sort: sortField.value,
+      order: sortOrder.value
+    }
+    const res = await getFileList(params)
     if (res.code === 0) {
       fileList.value = res.data || []
     } else {
@@ -409,6 +473,49 @@ const fetchFileList = async () => {
     console.error(error)
   } finally {
     loading.value = false
+  }
+}
+
+// 获取存储统计
+const fetchStorageStats = async () => {
+  try {
+    const res = await getStorageStats()
+    if (res.code === 0) {
+      storageStats.value = res.data
+    }
+  } catch (error) {
+    console.error('获取存储统计失败:', error)
+  }
+}
+
+// 搜索
+const handleSearch = () => {
+  fetchFileList()
+}
+
+// 新建文件夹
+const handleCreateFolder = async () => {
+  try {
+    const { value } = await ElMessageBox.prompt('请输入文件夹名称', '新建文件夹', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputPattern: /^.{1,50}$/,
+      inputErrorMessage: '文件夹名称长度为1-50个字符'
+    })
+    
+    if (value) {
+      await createFolder({
+        name: value,
+        parent_id: currentFolderId.value
+      })
+      ElMessage.success('文件夹创建成功')
+      fetchFileList()
+      fetchStorageStats()
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('创建失败')
+    }
   }
 }
 
@@ -711,6 +818,7 @@ const clearSelection = () => {
 // 点击页面其他地方隐藏右键菜单
 onMounted(() => {
   fetchFileList()
+  fetchStorageStats()
   document.addEventListener('click', hideContextMenu)
 })
 
@@ -744,6 +852,29 @@ onUnmounted(() => {
 .header-right {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+/* 存储统计 */
+.storage-stats {
+  display: flex;
+  gap: 24px;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.stats-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #606266;
+}
+
+.stats-item .el-icon {
+  color: #909399;
 }
 
 /* 面包屑导航 */
