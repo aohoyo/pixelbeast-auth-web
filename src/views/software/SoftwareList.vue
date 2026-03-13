@@ -584,6 +584,10 @@ onActivated(() => {
   display: block;
 }
 
+.icon-uploader :deep(.el-upload) {
+  display: block;
+}
+
 .icon-preview-box {
   width: 100px;
   height: 100px;
@@ -614,6 +618,26 @@ onActivated(() => {
   gap: 6px;
   color: #909399;
   font-size: 12px;
+}
+
+/* 进度条样式 - 确保可见 */
+.icon-wrapper :deep(.el-progress) {
+  display: block !important;
+  width: 100%;
+}
+
+.icon-wrapper :deep(.el-progress-bar) {
+  display: block !important;
+}
+
+.icon-wrapper :deep(.el-progress-bar__outer) {
+  display: block !important;
+  background-color: #ebeef5;
+  border-radius: 100px;
+}
+
+.icon-wrapper :deep(.el-progress-bar__inner) {
+  border-radius: 100px;
 }
 
 /* 响应式 */
