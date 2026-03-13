@@ -152,7 +152,7 @@
               placeholder="点击生成按钮或手动输入密钥"
               style="flex: 1;"
             />
-            <el-button type="primary" @click="generateAPIKey" :disabled="!!form.api_key">
+            <el-button type="primary" @click="generateAPIKey">
               <el-icon><Key /></el-icon>
             </el-button>
             <el-button v-if="form.api_key" @click="copyAPIKey(form.api_key)">
@@ -574,9 +574,20 @@ onActivated(() => {
   display: flex;
   gap: 8px;
   align-items: center;
+  width: 100%;
+}
+
+.api-key-input-group :deep(.el-input) {
+  flex: 1;
+  min-width: 200px;
 }
 
 .icon-wrapper {
+  width: 100%;
+}
+
+.icon-wrapper .el-input {
+  margin-top: 8px;
   width: 100%;
 }
 
@@ -621,11 +632,6 @@ onActivated(() => {
 }
 
 /* 进度条样式 - 确保可见 */
-.icon-wrapper {
-  width: 100px;
-  position: relative;
-}
-
 .icon-wrapper :deep(.el-progress) {
   display: block !important;
   width: 100px;
