@@ -1,0 +1,1 @@
+import{z as e}from"./index-HKE4pjV1.js";const a=t=>e({url:"/software",method:"get",params:t}),s=t=>e({url:`/software/${t}`,method:"get"}),u=t=>e({url:"/software",method:"post",data:t}),f=(t,r)=>e({url:`/software/${t}`,method:"put",data:r}),n=t=>e({url:`/software/${t}`,method:"delete"});export{s as a,u as c,n as d,a as g,f as u};

@@ -1,5 +1,19 @@
 <template>
-  <div class="file-manager">
+  <div 
+    class="file-manager"
+    @dragover.prevent="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop.prevent="handleDrop"
+    :class="{ 'is-dragging': isDragging }"
+  >
+    <!-- 拖拽上传提示 -->
+    <div v-if="isDragging" class="drag-overlay">
+      <div class="drag-content">
+        <el-icon :size="64"><Upload /></el-icon>
+        <p>释放文件以上传</p>
+      </div>
+    </div>
+    
     <el-card>
       <template #header>
         <div class="card-header">
@@ -238,6 +252,15 @@
           <el-icon><Link /></el-icon>
           复制链接
         </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" @click="openMoveDialog">
+          <el-icon><FolderRemove /></el-icon>
+          移动到...
+        </div>
+        <div class="context-menu-item" @click="openCopyDialog">
+          <el-icon><CopyDocument /></el-icon>
+          复制到...
+        </div>
         <div class="context-menu-item" @click="handleRename">
           <el-icon><Edit /></el-icon>
           重命名
@@ -249,6 +272,48 @@
         </div>
       </div>
     </teleport>
+    
+    <!-- 移动/复制文件夹选择器 -->
+    <el-dialog
+      v-model="moveCopyDialog.visible"
+      :title="moveCopyDialog.mode === 'move' ? '移动到' : '复制到'"
+      width="500px"
+    >
+      <div class="folder-selector">
+        <div class="current-location">
+          <el-icon><FolderOpened /></el-icon>
+          <span>选择目标文件夹：</span>
+        </div>
+        
+        <div class="folder-tree">
+          <div 
+            class="folder-item"
+            :class="{ 'is-selected': moveCopyDialog.targetId === 0 }"
+            @click="moveCopyDialog.targetId = 0"
+          >
+            <el-icon><Folder /></el-icon>
+            <span>根目录</span>
+          </div>
+          <div 
+            v-for="folder in folderList" 
+            :key="folder.id"
+            class="folder-item"
+            :class="{ 'is-selected': moveCopyDialog.targetId === folder.id }"
+            @click="moveCopyDialog.targetId = folder.id"
+          >
+            <el-icon><Folder /></el-icon>
+            <span>{{ folder.name }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="moveCopyDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="confirmMoveCopy" :loading="moveCopyDialog.loading">
+          {{ moveCopyDialog.mode === 'move' ? '移动' : '复制' }}
+        </el-button>
+      </template>
+    </el-dialog>
     
     <!-- 上传对话框 -->
     <el-dialog
@@ -328,7 +393,9 @@ import {
   Search,
   Document,
   Coin,
-  Folder
+  Folder,
+  FolderRemove,
+  CopyDocument
 } from '@element-plus/icons-vue'
 import FileIcon from '@/components/FileIcon.vue'
 import { getFileList, createFolder, deleteFile, batchDeleteFiles, renameFile, getDownloadUrl, getStorageStats, moveFiles, copyFiles } from '@/api/file'
@@ -367,6 +434,23 @@ const contextMenu = reactive({
   y: 0,
   file: null
 })
+
+// 移动/复制对话框
+const moveCopyDialog = reactive({
+  visible: false,
+  mode: 'move', // move 或 copy
+  targetId: 0,
+  fileIds: [],
+  loading: false
+})
+
+// 文件夹列表（用于移动/复制选择）
+const folderList = computed(() => {
+  return fileList.value.filter(f => f.type === 'folder')
+})
+
+// 拖拽状态
+const isDragging = ref(false)
 
 // 上传对话框
 const uploadDialog = reactive({
@@ -517,6 +601,95 @@ const handleCreateFolder = async () => {
       ElMessage.error('创建失败')
     }
   }
+}
+
+// 打开移动对话框
+const openMoveDialog = () => {
+  if (!contextMenu.file) return
+  moveCopyDialog.mode = 'move'
+  moveCopyDialog.targetId = 0
+  moveCopyDialog.fileIds = [contextMenu.file.id]
+  moveCopyDialog.visible = true
+  hideContextMenu()
+}
+
+// 打开复制对话框
+const openCopyDialog = () => {
+  if (!contextMenu.file) return
+  moveCopyDialog.mode = 'copy'
+  moveCopyDialog.targetId = 0
+  moveCopyDialog.fileIds = [contextMenu.file.id]
+  moveCopyDialog.visible = true
+  hideContextMenu()
+}
+
+// 确认移动/复制
+const confirmMoveCopy = async () => {
+  moveCopyDialog.loading = true
+  try {
+    if (moveCopyDialog.mode === 'move') {
+      await moveFiles(moveCopyDialog.fileIds, moveCopyDialog.targetId)
+      ElMessage.success('移动成功')
+    } else {
+      await copyFiles(moveCopyDialog.fileIds, moveCopyDialog.targetId)
+      ElMessage.success('复制成功')
+    }
+    moveCopyDialog.visible = false
+    fetchFileList()
+    fetchStorageStats()
+  } catch (error) {
+    ElMessage.error(moveCopyDialog.mode === 'move' ? '移动失败' : '复制失败')
+  } finally {
+    moveCopyDialog.loading = false
+  }
+}
+
+// 拖拽上传处理
+const handleDragOver = (e) => {
+  isDragging.value = true
+}
+
+const handleDragLeave = (e) => {
+  isDragging.value = false
+}
+
+const handleDrop = async (e) => {
+  isDragging.value = false
+  
+  const files = e.dataTransfer.files
+  if (!files || files.length === 0) return
+  
+  ElMessage.info(`正在上传 ${files.length} 个文件...`)
+  
+  // 逐个上传文件
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('parent_id', currentFolderId.value)
+      
+      const response = await fetch('/api/v1/files', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: formData
+      })
+      
+      const result = await response.json()
+      if (result.code === 0) {
+        ElMessage.success(`${file.name} 上传成功`)
+      } else {
+        ElMessage.error(`${file.name} 上传失败`)
+      }
+    } catch (error) {
+      ElMessage.error(`${file.name} 上传失败`)
+    }
+  }
+  
+  fetchFileList()
+  fetchStorageStats()
 }
 
 // 格式化文件大小
@@ -1109,5 +1282,78 @@ onUnmounted(() => {
   display: block !important;
   width: 100%;
   margin-top: 4px;
+}
+
+/* 拖拽上传 */
+.file-manager.is-dragging {
+  position: relative;
+}
+
+.drag-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px dashed #3b82f6;
+  border-radius: 8px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-content {
+  text-align: center;
+  color: #3b82f6;
+}
+
+.drag-content p {
+  margin-top: 16px;
+  font-size: 18px;
+}
+
+/* 文件夹选择器 */
+.folder-selector {
+  min-height: 200px;
+  max-height: 400px;
+}
+
+.current-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.folder-tree {
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.folder-item:last-child {
+  border-bottom: none;
+}
+
+.folder-item:hover {
+  background: #f5f7fa;
+}
+
+.folder-item.is-selected {
+  background: #ecf5ff;
+  color: #409eff;
 }
 </style>
